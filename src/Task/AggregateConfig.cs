@@ -10,6 +10,7 @@ using Task = Microsoft.Build.Utilities.Task;
 using System.Runtime.CompilerServices;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
+using System.Text.Json;
 
 [assembly: InternalsVisibleTo("AggregateConfig.Tests.UnitTests")]
 
@@ -134,6 +135,17 @@ namespace AggregateConfig
                         {
                             finalDictionary.Add(property.Key, property.Value);
                         }
+                    }
+                    else if (finalResult is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Object)
+                    {
+                        var jsonDictionary = JsonElementToDictionary(jsonElement);
+
+                        foreach (var property in additionalPropertiesDictionary)
+                        {
+                            jsonDictionary[property.Key] = property.Value;
+                        }
+
+                        finalResult = jsonDictionary;
                     }
                     else
                     {
@@ -286,6 +298,45 @@ namespace AggregateConfig
                 }
             }
             return additionalPropertiesDict;
+        }
+
+        private Dictionary<object, object> JsonElementToDictionary(JsonElement element)
+        {
+            var dictionary = new Dictionary<object, object>();
+
+            foreach (var property in element.EnumerateObject())
+            {
+                dictionary[property.Name] = ConvertJsonElementToObject(property.Value);
+            }
+
+            return dictionary;
+        }
+
+        private object ConvertJsonElementToObject(JsonElement element)
+        {
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    return JsonElementToDictionary(element);
+                case JsonValueKind.Array:
+                    var list = new List<object>();
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        list.Add(ConvertJsonElementToObject(item));
+                    }
+                    return list;
+                case JsonValueKind.String:
+                    return element.GetString();
+                case JsonValueKind.Number:
+                    return element.TryGetInt64(out long l) ? l : element.GetDouble();
+                case JsonValueKind.True:
+                case JsonValueKind.False:
+                    return element.GetBoolean();
+                case JsonValueKind.Null:
+                    return null;
+                default:
+                    throw new InvalidOperationException($"Unsupported JsonValueKind: {element.ValueKind}");
+            }
         }
     }
 }

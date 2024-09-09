@@ -27,6 +27,8 @@ namespace AggregateConfig.Writers
             {
                 case InputTypeEnum.Yaml:
                     return new YamlOutputWriter(fileSystem);
+                case InputTypeEnum.Json:
+                    return new JsonOutputWriter(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported input format");
             }

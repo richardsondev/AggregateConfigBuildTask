@@ -1,0 +1,77 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
+      run: dotnet restore src/AggregateConfigBuildTask.sln
+
+    - name: Build AggregateConfigBuildTask solution in Release mode
+      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+
+    - name: Run tests for AggregateConfigBuildTask solution
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+
+    - name: Upload NuGetPackage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: NuGetPackage
+        path: src/Task/bin/Release/AggregateConfigBuildTask.1.0.0.nupkg
+
+  integration_tests:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Download NuGetPackage artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: NuGetPackage
+        path: ./nuget/local
+
+    - name: Add local NuGet source
+      run: dotnet nuget add source ${{ github.workspace }}/nuget/local --name AggregateConfigBuildTask
+
+    - name: Restore IntegrationTests with custom AggregateConfigBuildTask package
+      run: dotnet restore test/IntegrationTests/IntegrationTests.csproj
+
+    - name: Build IntegrationTests in Release mode
+      run: dotnet build test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror
+
+    - name: Run IntegrationTests
+      run: dotnet test test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror
+
+    - name: Upload integration results artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: IntegrationTestResults-${{ matrix.os }}
+        path: test/IntegrationTests/out/

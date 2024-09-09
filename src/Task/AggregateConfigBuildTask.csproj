@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>AggregateConfigBuildTask</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>richardsondev</Authors>
+        <Owner>richardsondev</Owner>
+        <Company>richardsondev</Company>
+        <Description>Merges configuration files at build time, allowing them to be embedded as resources for streamlined deployment and access.</Description>
+        <PackageTags>yaml, json, arm, build, configuration, msbuild</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/richardsondev/AggregateConfigBuildTask</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/richardsondev/AggregateConfigBuildTask</PackageProjectUrl>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <PackageReadmeFile>docs/README.md</PackageReadmeFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.11.4" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.11.4" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" PrivateAssets="all" />
+        <PackageReference Include="ReferenceTrimmer" Version="3.3.6" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" PrivateAssets="all" />
+        <PackageReference Include="YamlDotNet" Version="16.1.0" PrivateAssets="all" GeneratePathProperty="true" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Contracts/Contracts.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)/Contracts.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
+        <None Include="$(OutputPath)/Microsoft.Bcl.AsyncInterfaces.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
+        <None Include="$(OutputPath)/System.Text.Json.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
+        <None Include="$(OutputPath)/YamlDotNet.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
+        <None Include="$(PkgYamlDotNet)/LICENSE.txt" Pack="true" PackagePath="/licenses/YamlDotNet">
+            <Link>licenses/YamlDotNet/LICENSE.txt</Link>
+        </None>
+        <None Include="build/AggregateConfigBuildTask.targets" Pack="true" PackagePath="/build/AggregateConfigBuildTask.targets" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="/licenses/">
+            <Link>licenses/LICENSE</Link>
+        </None>
+        <None Include="../../README.md" Pack="true" PackagePath="/docs/" />
+    </ItemGroup>
+
+</Project>

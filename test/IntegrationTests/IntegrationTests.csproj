@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>AggregateConfig.Tests.Integration</AssemblyName>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>false</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+        <PackageReference Include="coverlet.collector" Version="6.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+        <PackageReference Include="Moq" Version="4.20.71" />
+        <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+        <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <OutputDir>$(MSBuildProjectDirectory)\output</OutputDir>
+    </PropertyGroup>
+
+    <Target Name="InvokeTask" BeforeTargets="PrepareForBuild">
+        <!-- Run the AggregateConfig to generate the output.json -->
+        <AggregateConfig
+            InputDirectory="Configs"
+            OutputFile="$(MSBuildProjectDirectory)\out\output.json"
+            OutputType="Json"
+            AddSourceProperty="true" />
+
+        <!-- Run the AggregateConfig to generate the output.parameters.json -->
+        <ItemGroup>
+            <AdditionalProperty Include="ResourceGroup=Test=RG" />
+            <AdditionalProperty Include="Environment=Production" />
+            <AdditionalProperty Include="Description=Project V1" />
+        </ItemGroup>
+        <AggregateConfig
+            InputDirectory="Configs"
+            OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
+            OutputType="Arm"
+            AddSourceProperty="true"
+            AdditionalProperties="@(AdditionalProperty)">
+        </AggregateConfig>
+
+        <!-- Embed output.json and output.parameters.json as resources in the assembly -->
+        <ItemGroup>
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\output.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\output.parameters.json" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <Content Include="Configs\databases.yml" />
+        <Content Include="Configs\servers_secondary.yml" />
+        <Content Include="Configs\servers.yml" />
+    </ItemGroup>
+
+</Project>

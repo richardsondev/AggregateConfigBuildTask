@@ -91,7 +91,7 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
-      OutputType="ArmParameter"
+      OutputType="Arm"
       AdditionalProperties="@(AdditionalProperty)" />
   </Target>
 
@@ -174,7 +174,7 @@ In this example:
 - **AddSourceProperty** *(optional, default=false)*: Adds a `source` property to each object in the output, indicating the YAML file it originated from.
 - **OutputType** *(required)*: Determines the output format. Supported values:
   - `Json`: Outputs a regular JSON file.
-  - `ArmParameter`: Outputs an Azure ARM template parameter file.
+  - `Arm`: Outputs an Azure ARM template parameter file.
   - `Yaml`: Outputs a YAML file.
 - **InputType** *(optional, default=YAML)*: Determines the input format. Supported values:
   - `Json`: Inputs are JSON files with a `.json` extension.

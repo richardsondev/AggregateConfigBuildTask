@@ -9,8 +9,8 @@ namespace AggregateConfig.Tests.Integration
     public class EmbeddedResourceTests
     {
         [TestMethod]
-        [DataRow("IntegrationTests.out.output.json")]
-        [DataRow("IntegrationTests.out.output.parameters.json")]
+        [DataRow("IntegrationTests.out.test.json")]
+        [DataRow("IntegrationTests.out.test.parameters.json")]
         public void ReadEmbeddedResource_DeserializesJsonSuccessfully(string resourceName)
         {
             // Arrange

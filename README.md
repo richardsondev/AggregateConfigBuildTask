@@ -140,12 +140,12 @@ You can embed the output files (such as the generated JSON) as resources in the 
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       OutputType="Json"
       AdditionalProperties="@(AdditionalProperty)" />
-  </Target>
 
-  <!-- Embed output.json as a resource in the assembly -->
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\output.json" />
-  </ItemGroup>
+    <!-- Embed output.json as a resource in the assembly -->
+    <ItemGroup>
+      <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\output.json" />
+    </ItemGroup>
+  </Target>
 
 </Project>
 ```

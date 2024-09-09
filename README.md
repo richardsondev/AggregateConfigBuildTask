@@ -25,7 +25,10 @@ dotnet add package AggregateConfigBuildTask
 Alternatively, add the following line to your `.csproj` file:
 
 ```xml
-<PackageReference Include="AggregateConfigBuildTask" Version="1.0.1" />
+<PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
+  <PrivateAssets>all</PrivateAssets>
+  <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+</PackageReference>
 ```
 
 ## Usage
@@ -36,13 +39,6 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
     <ItemGroup>
@@ -75,13 +71,6 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <Target Name="AggregateConfigsForARM" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <AdditionalProperty Include="ResourceGroup=TestRG" />
@@ -105,13 +94,6 @@ You can also output the aggregated configuration back into YAML format:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <AdditionalProperty Include="ResourceGroup=TestRG" />
@@ -134,13 +116,6 @@ You can embed the output files (such as the generated JSON) as resources in the 
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
     <ItemGroup>

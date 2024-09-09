@@ -1,0 +1,82 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
+      run: dotnet restore src/AggregateConfigBuildTask.sln
+
+    - name: Build AggregateConfigBuildTask solution in Release mode
+      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+
+    - name: Run tests for AggregateConfigBuildTask solution
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+
+    - name: Upload AggregateConfigBuildTask.nupkg artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: AggregateConfigBuildTask.nupkg
+        path: src/Task/bin/Release/AggregateConfigBuildTask.1.0.0.nupkg
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Download AggregateConfigBuildTask.nupkg artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: AggregateConfigBuildTask.nupkg
+        path: ./nuget/local
+
+    - name: Remove all existing NuGet sources
+      run: |
+        sources=$(dotnet nuget list source | grep -oP '^\s*[\w.-]+')
+        for source in $sources; do
+          dotnet nuget remove source $source
+        done
+
+    - name: Add AggregateConfigBuildTask as local NuGet source
+      run: dotnet nuget add source ./nuget/local --name AggregateConfigBuildTask
+
+    - name: Add nuget.org as NuGet source
+      run: dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org
+
+    - name: Restore IntegrationTests with custom AggregateConfigBuildTask package
+      run: dotnet restore test/IntegrationTests/IntegrationTests.csproj
+
+    - name: Build IntegrationTests in Release mode
+      run: dotnet build test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror
+
+    - name: Run IntegrationTests
+      run: dotnet test test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror

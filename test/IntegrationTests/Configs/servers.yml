@@ -1,0 +1,14 @@
+﻿servers:
+  - name: 'web-server-01'
+    ipAddress: '192.168.1.10'
+    roles:
+      - 'web'
+      - 'api'
+    monitoringEnabled: true
+    operatingSystem: 'Ubuntu 20.04'
+  - name: 'db-server-01'
+    ipAddress: '192.168.1.20'
+    roles:
+      - 'database'
+    monitoringEnabled: true
+    operatingSystem: 'CentOS 8'

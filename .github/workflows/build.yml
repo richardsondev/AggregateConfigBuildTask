@@ -34,7 +34,7 @@ jobs:
       run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
 
     - name: Upload AggregateConfigBuildTask.nupkg artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: AggregateConfigBuildTask.nupkg
         path: src/Task/bin/Release/AggregateConfigBuildTask.1.0.0.nupkg

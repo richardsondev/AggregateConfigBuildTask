@@ -299,8 +299,7 @@ namespace AggregateConfig.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
-                AddSourceProperty = true
+                OutputType = OutputTypeEnum.Arm.ToString()
             };
             task.BuildEngine = Mock.Of<IBuildEngine>();
 
@@ -357,6 +356,8 @@ namespace AggregateConfig.Tests.Unit
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
             Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
+            Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
+            Assert.AreEqual("file1", parameters.GetValue("options")["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
             Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
         }

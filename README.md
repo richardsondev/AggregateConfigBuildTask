@@ -38,7 +38,10 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
@@ -47,7 +50,7 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
       <AdditionalProperty Include="Environment=Production" />
     </ItemGroup>
 
-    <AggregateConfigBuildTask 
+    <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       AddSourceProperty="true"
@@ -72,7 +75,10 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="AggregateConfigsForARM" BeforeTargets="PrepareForBuild">
@@ -81,7 +87,7 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
       <AdditionalProperty Include="Environment=Production" />
     </ItemGroup>
 
-    <AggregateConfigBuildTask 
+    <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
       OutputType="ArmParameter"
@@ -99,7 +105,10 @@ You can also output the aggregated configuration back into YAML format:
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
@@ -108,7 +117,7 @@ You can also output the aggregated configuration back into YAML format:
       <AdditionalProperty Include="Environment=Production" />
     </ItemGroup>
 
-    <AggregateConfigBuildTask 
+    <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
       OutputType="Yaml"
@@ -126,7 +135,10 @@ You can embed the output files (such as the generated JSON) as resources in the 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
@@ -135,7 +147,7 @@ You can embed the output files (such as the generated JSON) as resources in the 
       <AdditionalProperty Include="Environment=Production" />
     </ItemGroup>
 
-    <AggregateConfigBuildTask 
+    <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       OutputType="Json"
@@ -214,6 +226,7 @@ resources:
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resources": {
+      "type": "array",
       "value": [
         {
           "id": "Resource1",
@@ -230,9 +243,11 @@ resources:
       ]
     },
     "ResourceGroup": {
+      "type": "string",
       "value": "TestRG"
     },
     "Environment": {
+      "type": "string",
       "value": "Production"
     }
   }

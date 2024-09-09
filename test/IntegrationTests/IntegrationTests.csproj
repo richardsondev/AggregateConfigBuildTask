@@ -10,7 +10,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+        <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+        </PackageReference>
         <PackageReference Include="coverlet.collector" Version="6.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
         <PackageReference Include="Moq" Version="4.20.71" />

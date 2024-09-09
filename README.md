@@ -262,6 +262,11 @@ resources:
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/richardsondev/AggregateConfigBuildTask/blob/main/LICENSE) file for details.
 
+## Third-Party Libraries
+
+This tool makes use of [YamlDotNet](https://github.com/aaubry/YamlDotNet) for YAML serialization and deserialization.
+YamlDotNet is licensed under the MIT License. For more details, please refer to the [YamlDotNet License](https://github.com/aaubry/YamlDotNet/blob/master/LICENSE.txt).
+
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests on [GitHub](https://github.com/richardsondev/AggregateConfigBuildTask).

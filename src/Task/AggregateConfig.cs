@@ -1,16 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using AggregateConfig.Converters;
+﻿using AggregateConfig.Contracts;
 using AggregateConfig.Writers;
-using AggregateConfig.Contracts;
 using Microsoft.Build.Framework;
-using Task = Microsoft.Build.Utilities.Task;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Serialization;
 using System.Text.Json;
+using Task = Microsoft.Build.Utilities.Task;
 
 [assembly: InternalsVisibleTo("AggregateConfig.Tests.UnitTests")]
 
@@ -23,16 +20,15 @@ namespace AggregateConfig
         [Required]
         public string InputDirectory { get; set; }
 
-        [Required]
         public string InputType { get; set; }
 
         [Required]
         public string OutputFile { get; set; }
 
-        public bool AddSourceProperty { get; set; } = false;
-
         [Required]
         public string OutputType { get; set; }
+
+        public bool AddSourceProperty { get; set; } = false;
 
         public string[] AdditionalProperties { get; set; }
 

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using AggregateConfig.Converters;
 using AggregateConfig.Writers;
 using AggregateConfig.Contracts;
 using Microsoft.Build.Framework;
@@ -20,6 +21,9 @@ namespace AggregateConfig
 
         [Required]
         public string InputDirectory { get; set; }
+
+        [Required]
+        public string InputType { get; set; }
 
         [Required]
         public string OutputFile { get; set; }
@@ -57,38 +61,56 @@ namespace AggregateConfig
                     return false;
                 }
 
+                if (string.IsNullOrEmpty(InputType) || !Enum.TryParse(InputType, out InputTypeEnum inputType))
+                {
+                    inputType = InputTypeEnum.Yaml;
+                }
+
+                if (!Enum.IsDefined(typeof(InputTypeEnum), inputType))
+                {
+                    Console.Error.WriteLine("Invalid InputType.");
+                    return false;
+                }
+
                 string directoryPath = Path.GetDirectoryName(OutputFile);
                 if (!fileSystem.DirectoryExists(directoryPath))
                 {
                     fileSystem.CreateDirectory(directoryPath);
                 }
 
-                var yamlFiles = fileSystem.GetFiles(InputDirectory, "*.yml");
-                foreach (var yamlFile in yamlFiles)
+                var expectedExtensions = OutputWriterFactory.GetExpectedFileExtensions(inputType);
+                var files = fileSystem.GetFiles(InputDirectory, "*.*")
+                    .Where(file => expectedExtensions.Contains(Path.GetExtension(file).ToLower()))
+                    .ToList();
+
+                foreach (var file in files)
                 {
-                    var yamlContent = fileSystem.ReadAllText(yamlFile);
-                    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(yamlFile);
-
-                    // Deserialize the YAML content
-                    var deserializer = new DeserializerBuilder()
-                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                        .Build();
-
-                    object yamlData = null;
-
+                    IInputReader outputWriter;
                     try
                     {
-                        yamlData = deserializer.Deserialize<object>(yamlContent);
+                        outputWriter = OutputWriterFactory.GetInputReader(fileSystem, inputType);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        hasError = true;
+                        Console.Error.WriteLine($"No reader found for file {file}: {ex.Message}");
+                        continue;
+                    }
+
+                    object fileData;
+                    try
+                    {
+                        fileData = outputWriter.ReadInput(file);
                     }
                     catch (Exception ex)
                     {
                         hasError = true;
-                        Console.Error.WriteLine($"Could not parse {yamlFile}: {ex.Message}");
+                        Console.Error.WriteLine($"Could not parse {file}: {ex.Message}");
                         continue;
                     }
 
-                    // Merge the deserialized YAML object into the final result
-                    finalResult = MergeYamlObjects(finalResult, yamlData, yamlFile, AddSourceProperty);
+                    // Merge the deserialized object into the final result
+                    finalResult = MergeYamlObjects(finalResult, fileData, file, AddSourceProperty);
                 }
 
                 if (hasError)

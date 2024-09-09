@@ -7,4 +7,11 @@
         Yml,
         Yaml = Yml
     }
+
+    public enum InputTypeEnum
+    {
+        Json,
+        Yml,
+        Yaml = Yml
+    }
 }

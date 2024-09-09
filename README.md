@@ -9,7 +9,7 @@
 
 ## Features
 
-- Merge multiple YAML configuration files into a single output format (JSON, Azure ARM parameters, or YAML).
+- Merge multiple configuration files into a single output format (JSON, Azure ARM parameters, or YAML).
 - Support for injecting custom metadata (e.g., `ResourceGroup`, `Environment`) into the output.
 - Optionally include the source file name in each configuration entry.
 - Embed output files as resources in the assembly for easy inclusion in your project.
@@ -54,6 +54,7 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       AddSourceProperty="true"
+      InputType="Yaml"
       OutputType="Json"
       AdditionalProperties="@(AdditionalProperty)" />
   </Target>
@@ -175,6 +176,9 @@ In this example:
   - `Json`: Outputs a regular JSON file.
   - `ArmParameter`: Outputs an Azure ARM template parameter file.
   - `Yaml`: Outputs a YAML file.
+- **InputType** *(optional, default=YAML)*: Determines the input format. Supported values:
+  - `Json`: Inputs are JSON files with a `.json` extension.
+  - `Yaml`: Inputs are YAML files with a `.yml` or `.yaml` extension.
 - **AdditionalProperties** *(optional)*: A collection of custom top-level properties to inject into the final output. Use the `ItemGroup` syntax to pass key-value pairs.
 
 ## Example YAML Input

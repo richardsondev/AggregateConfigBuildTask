@@ -1,4 +1,4 @@
-﻿namespace AggregateConfig.Writers
+﻿namespace AggregateConfig.FileHandlers
 {
     public interface IInputReader
     {

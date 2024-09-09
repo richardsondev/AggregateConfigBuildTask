@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
 
-namespace AggregateConfig.Writers
+namespace AggregateConfig.FileHandlers
 {
-    public class ArmParametersOutputWriter : IOutputWriter
+    public class ArmParametersFileHandler : IOutputWriter
     {
         IFileSystem fileSystem;
 
-        internal ArmParametersOutputWriter(IFileSystem fileSystem)
+        internal ArmParametersFileHandler(IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
         }

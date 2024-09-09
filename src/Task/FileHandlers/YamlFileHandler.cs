@@ -1,13 +1,13 @@
 ﻿using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace AggregateConfig.Writers
+namespace AggregateConfig.FileHandlers
 {
-    public class YamlOutputWriter : IOutputWriter, IInputReader
+    public class YamlFileHandler : IOutputWriter, IInputReader
     {
         IFileSystem fileSystem;
 
-        internal YamlOutputWriter(IFileSystem fileSystem)
+        internal YamlFileHandler(IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
         }

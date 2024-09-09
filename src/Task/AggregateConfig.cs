@@ -1,5 +1,5 @@
 ﻿using AggregateConfig.Contracts;
-using AggregateConfig.Writers;
+using AggregateConfig.FileHandlers;
 using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
@@ -75,7 +75,7 @@ namespace AggregateConfig
                     fileSystem.CreateDirectory(directoryPath);
                 }
 
-                var expectedExtensions = OutputWriterFactory.GetExpectedFileExtensions(inputType);
+                var expectedExtensions = FileHandlerFactory.GetExpectedFileExtensions(inputType);
                 var files = fileSystem.GetFiles(InputDirectory, "*.*")
                     .Where(file => expectedExtensions.Contains(Path.GetExtension(file).ToLower()))
                     .ToList();
@@ -85,7 +85,7 @@ namespace AggregateConfig
                     IInputReader outputWriter;
                     try
                     {
-                        outputWriter = OutputWriterFactory.GetInputReader(fileSystem, inputType);
+                        outputWriter = FileHandlerFactory.GetInputReader(fileSystem, inputType);
                     }
                     catch (ArgumentException ex)
                     {
@@ -150,7 +150,7 @@ namespace AggregateConfig
                     }
                 }
 
-                var writer = OutputWriterFactory.GetOutputWriter(fileSystem, outputType);
+                var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);
 
                 return true;

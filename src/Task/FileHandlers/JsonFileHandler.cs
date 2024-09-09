@@ -1,12 +1,12 @@
 ﻿using System.Text.Json;
 
-namespace AggregateConfig.Writers
+namespace AggregateConfig.FileHandlers
 {
-    public class JsonOutputWriter : IOutputWriter, IInputReader
+    public class JsonFileHandler : IOutputWriter, IInputReader
     {
         IFileSystem fileSystem;
 
-        internal JsonOutputWriter(IFileSystem fileSystem)
+        internal JsonFileHandler(IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
         }

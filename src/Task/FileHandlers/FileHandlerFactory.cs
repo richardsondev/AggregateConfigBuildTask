@@ -2,20 +2,20 @@
 using System;
 using System.Collections.Generic;
 
-namespace AggregateConfig.Writers
+namespace AggregateConfig.FileHandlers
 {
-    public static class OutputWriterFactory
+    public static class FileHandlerFactory
     {
         internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, OutputTypeEnum format)
         {
             switch (format)
             {
                 case OutputTypeEnum.Json:
-                    return new JsonOutputWriter(fileSystem);
+                    return new JsonFileHandler(fileSystem);
                 case OutputTypeEnum.Yaml:
-                    return new YamlOutputWriter(fileSystem);
+                    return new YamlFileHandler(fileSystem);
                 case OutputTypeEnum.Arm:
-                    return new ArmParametersOutputWriter(fileSystem);
+                    return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format");
             }
@@ -26,9 +26,9 @@ namespace AggregateConfig.Writers
             switch (format)
             {
                 case InputTypeEnum.Yaml:
-                    return new YamlOutputWriter(fileSystem);
+                    return new YamlFileHandler(fileSystem);
                 case InputTypeEnum.Json:
-                    return new JsonOutputWriter(fileSystem);
+                    return new JsonFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported input format");
             }

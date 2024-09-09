@@ -4,6 +4,7 @@
     {
         Json,
         Arm,
+        ArmParameter = Arm,
         Yml,
         Yaml = Yml
     }

@@ -25,7 +25,7 @@ dotnet add package AggregateConfigBuildTask
 Alternatively, add the following line to your `.csproj` file:
 
 ```xml
-<PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+<PackageReference Include="AggregateConfigBuildTask" Version="1.0.1" />
 ```
 
 ## Usage
@@ -38,7 +38,7 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
     </PackageReference>
@@ -76,7 +76,7 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
     </PackageReference>
@@ -106,7 +106,7 @@ You can also output the aggregated configuration back into YAML format:
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
     </PackageReference>
@@ -136,7 +136,7 @@ You can embed the output files (such as the generated JSON) as resources in the 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
+    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
     </PackageReference>

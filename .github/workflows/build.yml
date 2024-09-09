@@ -55,7 +55,7 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Download AggregateConfigBuildTask.nupkg artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: AggregateConfigBuildTask.nupkg
         path: ./nuget/local

@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <PackageId>AggregateConfigBuildTask</PackageId>
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
         <Authors>richardsondev</Authors>
         <Owner>richardsondev</Owner>
         <Company>richardsondev</Company>

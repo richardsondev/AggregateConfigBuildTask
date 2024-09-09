@@ -283,5 +283,37 @@ namespace AggregateConfig.Tests.Unit
             // Assert: Verify the task fails due to invalid YAML
             Assert.IsFalse(result);
         }
+
+        [TestMethod]
+        [Description("Test that boolean input values are correctly treated as booleans in the output.")]
+        public void ShouldCorrectlyParseBooleanValues()
+        {
+            // Arrange: Prepare sample YAML data.
+            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+        options:
+          - name: 'Option 1'
+            description: 'First option'
+            isEnabled: true");
+
+            var task = new AggregateConfig(mockFileSystem)
+            {
+                InputDirectory = testPath,
+                OutputFile = testPath + @"\output.json",
+                OutputType = OutputTypeEnum.Arm.ToString(),
+                AddSourceProperty = true
+            };
+            task.BuildEngine = Mock.Of<IBuildEngine>();
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify additional properties are included in ARM output
+            Assert.IsTrue(result);
+            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
+            JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+        }
     }
 }

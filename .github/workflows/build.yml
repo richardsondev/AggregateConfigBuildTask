@@ -62,13 +62,13 @@ jobs:
       run: dotnet nuget add source ${{ github.workspace }}/nuget/local --name AggregateConfigBuildTask
 
     - name: Restore IntegrationTests with custom AggregateConfigBuildTask package
-      run: dotnet restore test/IntegrationTests/IntegrationTests.csproj
+      run: dotnet restore test/IntegrationTests.sln
 
     - name: Build IntegrationTests in Release mode
-      run: dotnet build test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror
+      run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror
 
     - name: Run IntegrationTests
-      run: dotnet test test/IntegrationTests/IntegrationTests.csproj --configuration Release -warnaserror
+      run: dotnet test test/IntegrationTests.sln --configuration Release -warnaserror
 
     - name: Upload integration results artifact
       uses: actions/upload-artifact@v4

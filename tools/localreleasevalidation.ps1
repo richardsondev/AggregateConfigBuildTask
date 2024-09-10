@@ -2,7 +2,7 @@
 
 # Step 1: Set up paths
 $solutionPath = "src\AggregateConfigBuildTask.sln"
-$testProjectPath = "test\IntegrationTests\IntegrationTests.csproj"
+$testProjectPath = "test\IntegrationTests.sln"
 $nupkgPath = "src\Task\bin\Release\AggregateConfigBuildTask.1.0.1.nupkg"
 $localNugetDir = ($env:APPDATA + "\Roaming\NuGet\nuget\local")
 $nugetSourceName = "AggregateConfigBuildTask"
@@ -13,6 +13,7 @@ dotnet restore $solutionPath
 
 # Step 3: Build the src/AggregateConfigBuildTask.sln project in Release mode
 Write-Host "Building $solutionPath in Release mode..."
+dotnet clean $solutionPath
 dotnet build $solutionPath --configuration Release -warnaserror
 
 # Step 4: Run tests for AggregateConfigBuildTask.sln
@@ -43,6 +44,7 @@ dotnet restore $testProjectPath
 
 # Step 9: Build the integration tests project in Release mode
 Write-Host "Building $testProjectPath in Release mode..."
+dotnet clean $solutionPath
 dotnet build $testProjectPath --configuration Release -warnaserror
 
 # Step 10: Run the integration tests

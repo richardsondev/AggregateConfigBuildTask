@@ -140,7 +140,10 @@ namespace AggregateConfig.Tests.Unit
           - name: 'Option 2'
             description: 'Second option'
           - name: 'Option 3'
-            description: 'Third option'");
+            description: 'Third option'
+        text:
+          - name: 'Text 1'
+            description: 'Text'");
 
             // Create the task instance with the mock file system
             var task = new AggregateConfig(mockFileSystem)
@@ -165,6 +168,8 @@ namespace AggregateConfig.Tests.Unit
             Assert.AreEqual("file2", json["options"][1]["source"]);
             Assert.IsTrue(json["options"][2].ContainsKey("source"));
             Assert.AreEqual("file2", json["options"][2]["source"]);
+            Assert.IsTrue(json["text"][0].ContainsKey("source"));
+            Assert.AreEqual("file2", json["text"][0]["source"]);
         }
 
         [TestMethod]
@@ -342,10 +347,10 @@ namespace AggregateConfig.Tests.Unit
                 OutputType = OutputTypeEnum.Arm.ToString(),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
-        {
-            { "Group", "TestRG" },
-            { "Environment", "Prod" }
-        }.Select(q => $"{q.Key}={q.Value}").ToArray()
+                {
+                    { "Group", "TestRG" },
+                    { "Environment", "Prod" }
+                }.Select(q => $"{q.Key}={q.Value}").ToArray()
             };
             task.BuildEngine = Mock.Of<IBuildEngine>();
 
@@ -361,6 +366,58 @@ namespace AggregateConfig.Tests.Unit
             Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
             Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
             Assert.AreEqual("file1", parameters.GetValue("options")["value"].First()["source"].Value<string>());
+            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+        }
+
+        [TestMethod]
+        [Description("Test that ARM parameters are correctly processed and additional properties are included in the output.")]
+        public void ShouldIncludeAdditionalPropertiesInArmParameterFile()
+        {
+            // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
+            mockFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", @"
+    {
+        ""parameters"": {
+            ""options"": {
+                ""type"": ""array"",
+                ""value"": [
+                    {
+                        ""name"": ""Option 1"",
+                        ""description"": ""First option"",
+                        ""isEnabled"": true
+                    }
+                ]
+            }
+        }
+    }");
+
+            var task = new AggregateConfig(mockFileSystem)
+            {
+                InputType = InputTypeEnum.Arm.ToString(),
+                InputDirectory = testPath,
+                OutputFile = testPath + @"\output.parameters.json",
+                OutputType = OutputTypeEnum.Arm.ToString(),
+                AddSourceProperty = true,
+                AdditionalProperties = new Dictionary<string, string>
+                {
+                    { "Group", "TestRG" },
+                    { "Environment", "Prod" }
+                }.Select(q => $"{q.Key}={q.Value}").ToArray()
+            };
+            task.BuildEngine = Mock.Of<IBuildEngine>();
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify additional properties are included in ARM output
+            Assert.IsTrue(result);
+            string output = mockFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
+            var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
+            JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
+            Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
+            Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
+            Assert.AreEqual("file1.parameters", parameters.GetValue("options")["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
             Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
         }

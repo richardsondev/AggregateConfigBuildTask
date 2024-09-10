@@ -12,6 +12,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 10
+
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
 
     steps:
     - name: Checkout repository
@@ -19,20 +23,34 @@ jobs:
       with:
         fetch-depth: 1
 
-    - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
-      run: dotnet restore src/AggregateConfigBuildTask.sln
+    - name: Set version
+      id: get_version
+      shell: pwsh
+      run: |
+        # Set version
+        $TAG = (git describe --tags --exact-match 2>$null) -or ""
+
+        if ($TAG -like "v*") {
+            # Remove the 'v' prefix
+            $VERSION = $TAG.Substring(1)
+        } else {
+            $COMMIT_HASH = git rev-parse --short HEAD
+            $VERSION = "0.0.1-$COMMIT_HASH"
+        }
+
+        Write-Output "::set-output name=VERSION::$VERSION"
 
     - name: Build AggregateConfigBuildTask solution in Release mode
-      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Run tests for AggregateConfigBuildTask solution
-      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Upload NuGetPackage artifact
       uses: actions/upload-artifact@v4
       with:
         name: NuGetPackage
-        path: src/Task/bin/Release/AggregateConfigBuildTask.1.0.1.nupkg
+        path: src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
 
   integration_tests:
     needs: build
@@ -40,6 +58,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     steps:
     - name: Checkout repository
@@ -61,14 +80,11 @@ jobs:
     - name: Add local NuGet source
       run: dotnet nuget add source ${{ github.workspace }}/nuget/local --name AggregateConfigBuildTask
 
-    - name: Restore IntegrationTests with custom AggregateConfigBuildTask package
-      run: dotnet restore test/IntegrationTests.sln
-
     - name: Build IntegrationTests in Release mode
-      run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror
+      run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}
 
     - name: Run IntegrationTests
-      run: dotnet test test/IntegrationTests.sln --configuration Release -warnaserror
+      run: dotnet test test/IntegrationTests.sln --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}
 
     - name: Upload integration results artifact
       uses: actions/upload-artifact@v4

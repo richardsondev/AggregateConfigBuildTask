@@ -8,10 +8,11 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version Condition=" '$(Version)' == '' ">0.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
+        <PackageReference Include="AggregateConfigBuildTask" Version="$(Version)">
             <PrivateAssets>all</PrivateAssets>
             <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
         </PackageReference>
@@ -35,14 +36,14 @@
         <!-- Run the AggregateConfig to generate the output.json -->
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.json"
+            OutputFile="$(MSBuildProjectDirectory)\out\json\test.json"
             OutputType="Json"
             AddSourceProperty="true" />
 
         <!-- Run the AggregateConfig to generate the output.yml -->
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.yml"
+            OutputFile="$(MSBuildProjectDirectory)\out\yaml\test.yml"
             OutputType="Yaml"
             AddSourceProperty="true" />
 
@@ -54,16 +55,26 @@
         </ItemGroup>
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.parameters.json"
+            OutputFile="$(MSBuildProjectDirectory)\out\arm\test.parameters.json"
             OutputType="Arm"
             AddSourceProperty="true"
             AdditionalProperties="@(AdditionalProperty)">
         </AggregateConfig>
 
-        <!-- Embed output.json and output.parameters.json as resources in the assembly -->
+        <!-- Run the AggregateConfig to convert the generated ARM parameter file back to yml -->
+        <AggregateConfig
+            InputType="Arm"
+            InputDirectory="$(MSBuildProjectDirectory)\out\arm"
+            OutputFile="$(MSBuildProjectDirectory)\out\arm2yml\out.yml"
+            OutputType="Yaml"
+            AddSourceProperty="true" />
+
+        <!-- Embed output as resources in the assembly -->
         <ItemGroup>
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\test.json" />
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\test.parameters.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\json\test.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\yaml\test.yml" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\arm\test.parameters.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\arm2yml\out.yml" />
         </ItemGroup>
     </Target>
 
@@ -73,10 +84,10 @@
             <AdditionalProperty Include="Environment=Production" />
         </ItemGroup>
 
-        <!--InputType="Yaml"-->
         <AggregateConfig
+          InputType="Yaml"
           InputDirectory="Configs"
-          OutputFile="$(MSBuildProjectDirectory)\out\output.json"
+          OutputFile="$(MSBuildProjectDirectory)\out\sample1_output.json"
           AddSourceProperty="true"
           OutputType="Json"
           AdditionalProperties="@(AdditionalProperty)" />
@@ -90,7 +101,7 @@
 
         <AggregateConfig
           InputDirectory="Configs"
-          OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
+          OutputFile="$(MSBuildProjectDirectory)\out\sample2_output.parameters.json"
           OutputType="Arm"
           AdditionalProperties="@(AdditionalProperty)" />
     </Target>
@@ -103,7 +114,7 @@
 
         <AggregateConfig
           InputDirectory="Configs"
-          OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
+          OutputFile="$(MSBuildProjectDirectory)\out\sample3_output.yaml"
           OutputType="Yaml"
           AdditionalProperties="@(AdditionalProperty)" />
     </Target>
@@ -116,12 +127,12 @@
 
         <AggregateConfig
           InputDirectory="Configs"
-          OutputFile="$(MSBuildProjectDirectory)\out\output.json"
+          OutputFile="$(MSBuildProjectDirectory)\out\sample4_output.json"
           OutputType="Json"
           AdditionalProperties="@(AdditionalProperty)" />
 
         <ItemGroup>
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\output.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\sample4_output.json" />
         </ItemGroup>
     </Target>
 

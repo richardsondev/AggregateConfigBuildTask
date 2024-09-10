@@ -29,6 +29,8 @@ namespace AggregateConfig.FileHandlers
                     return new YamlFileHandler(fileSystem);
                 case InputTypeEnum.Json:
                     return new JsonFileHandler(fileSystem);
+                case InputTypeEnum.Arm:
+                    return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported input format");
             }
@@ -40,10 +42,10 @@ namespace AggregateConfig.FileHandlers
             {
                 case InputTypeEnum.Json:
                     return new List<string> { ".json" };
-
                 case InputTypeEnum.Yaml:
                     return new List<string> { ".yml", ".yaml" };
-
+                case InputTypeEnum.Arm:
+                    return new List<string> { ".json" };
                 default:
                     throw new ArgumentException("Unsupported input type");
             }

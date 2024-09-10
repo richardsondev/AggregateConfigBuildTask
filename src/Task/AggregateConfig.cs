@@ -54,20 +54,19 @@ namespace AggregateConfig
                 if (!Enum.TryParse(OutputType, out OutputTypeEnum outputType) ||
                     !Enum.IsDefined(typeof(OutputTypeEnum), outputType))
                 {
-                    Console.Error.WriteLine($"Invalid OutputType.");
+                    Log.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputTypeEnum))));
                     return false;
                 }
 
-                if (string.IsNullOrEmpty(InputType) || !Enum.TryParse(InputType, out InputTypeEnum inputType))
+                InputTypeEnum inputType = InputTypeEnum.Yaml;
+                if (!string.IsNullOrEmpty(InputType) &&
+                    (!Enum.TryParse(InputType, out inputType) || !Enum.IsDefined(typeof(InputTypeEnum), inputType)))
                 {
-                    inputType = InputTypeEnum.Yaml;
-                }
-
-                if (!Enum.IsDefined(typeof(InputTypeEnum), inputType))
-                {
-                    Console.Error.WriteLine("Invalid InputType.");
+                    Log.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputTypeEnum))));
                     return false;
                 }
+
+                Log.LogMessage(MessageImportance.High, "Aggregating {0} to {1} in folder {2}", inputType, outputType, InputDirectory);
 
                 string directoryPath = Path.GetDirectoryName(OutputFile);
                 if (!fileSystem.DirectoryExists(directoryPath))
@@ -82,6 +81,8 @@ namespace AggregateConfig
 
                 foreach (var file in files)
                 {
+                    Log.LogMessage(MessageImportance.High, "- Found file {0}", file);
+
                     IInputReader outputWriter;
                     try
                     {
@@ -90,7 +91,7 @@ namespace AggregateConfig
                     catch (ArgumentException ex)
                     {
                         hasError = true;
-                        Console.Error.WriteLine($"No reader found for file {file}: {ex.Message}");
+                        Log.LogError("No reader found for file {0}: {1} Stacktrace: {2}", file, ex.Message, ex.StackTrace);
                         continue;
                     }
 
@@ -102,7 +103,8 @@ namespace AggregateConfig
                     catch (Exception ex)
                     {
                         hasError = true;
-                        Console.Error.WriteLine($"Could not parse {file}: {ex.Message}");
+                        Log.LogError("Could not parse {0}: {1}", file, ex.Message);
+                        Log.LogErrorFromException(ex, true, true, file);
                         continue;
                     }
 
@@ -117,25 +119,27 @@ namespace AggregateConfig
 
                 if (finalResult == null)
                 {
-                    Console.Error.WriteLine($"No input was found! Check the input directory.");
+                    Log.LogError("No input was found! Check the input directory.");
                     return false;
                 }
 
                 var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
                 if (!ObjectManager.InjectAdditionalProperties(ref finalResult, additionalPropertiesDictionary))
                 {
-                    Console.Error.WriteLine("Additional properties could not be injected since the top-level is not a JSON object.");
+                    Log.LogError("Additional properties could not be injected since the top-level is not a JSON object.");
                     return false;
                 }
 
                 var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);
+                Log.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Log.LogErrorFromException(ex);
+                Log.LogError("An unknown exception occured: {0}", ex.Message);
+                Log.LogErrorFromException(ex, true, true, null);
                 return false;
             }
         }

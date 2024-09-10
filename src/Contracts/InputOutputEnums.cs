@@ -12,6 +12,8 @@
     public enum InputTypeEnum
     {
         Json,
+        Arm,
+        ArmParameter = Arm,
         Yml,
         Yaml = Yml
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace AggregateConfig.Tests.Unit
@@ -128,6 +129,13 @@ namespace AggregateConfig.Tests.Unit
         public TextReader OpenText(string path)
         {
             return new StringReader(ReadAllText(path));
+        }
+
+        /// <inheritdoc />
+        public Stream OpenRead(string inputPath)
+        {
+            var byteArray = Encoding.UTF8.GetBytes(ReadAllText(inputPath));
+            return new MemoryStream(byteArray);
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -13,35 +13,40 @@ namespace AggregateConfigBuildTask
         /// </summary>
         public static JsonElement MergeObjects(JsonElement? obj1, JsonElement? obj2, string source2, bool injectSourceProperty)
         {
-            // If injectSourceProperty is true, inject the source property into the second JSON object
+            // If injectSourceProperty is true, inject the source property into the second object
             if (injectSourceProperty && obj2.HasValue && obj2.Value.ValueKind == JsonValueKind.Object)
             {
                 var obj2Dict = obj2.Value;
                 var jsonObject = obj2Dict.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
 
-                if (jsonObject.FirstOrDefault().Value.ValueKind == JsonValueKind.Array)
+                foreach (var kvp in jsonObject)
                 {
-                    var firstObj2Value = jsonObject.FirstOrDefault().Value;
-                    var obj2NestedList = firstObj2Value.EnumerateArray().ToList();
-
-                    for (int index = 0; index < obj2NestedList.Count; index++)
+                    var key = kvp.Key;
+                    var value = kvp.Value;
+                    if (value.ValueKind == JsonValueKind.Array)
                     {
-                        var currentObj2Nested = obj2NestedList[index];
+                        var firstObj2Value = value;
+                        var obj2NestedList = firstObj2Value.EnumerateArray().ToList();
 
-                        if (currentObj2Nested.ValueKind == JsonValueKind.Object)
+                        for (int index = 0; index < obj2NestedList.Count; index++)
                         {
-                            var nestedObj = currentObj2Nested;
-                            var nestedDict = nestedObj.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+                            var currentObj2Nested = obj2NestedList[index];
 
-                            // Inject the "source" property
-                            nestedDict["source"] = JsonDocument.Parse($"\"{Path.GetFileNameWithoutExtension(source2)}\"").RootElement;
+                            if (currentObj2Nested.ValueKind == JsonValueKind.Object)
+                            {
+                                var nestedObj = currentObj2Nested;
+                                var nestedDict = nestedObj.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
 
-                            // Update the list at the correct index
-                            obj2NestedList[index] = JsonHelper.ConvertToJsonElement(nestedDict);
+                                // Inject the "source" property
+                                nestedDict["source"] = JsonDocument.Parse($"\"{Path.GetFileNameWithoutExtension(source2)}\"").RootElement;
+
+                                // Update the list at the correct index
+                                obj2NestedList[index] = JsonHelper.ConvertToJsonElement(nestedDict);
+                            }
                         }
-                    }
 
-                    jsonObject[jsonObject.FirstOrDefault().Key] = JsonHelper.ConvertToJsonElement(obj2NestedList);
+                        jsonObject[key] = JsonHelper.ConvertToJsonElement(obj2NestedList);
+                    }
                 }
                 obj2 = JsonHelper.ConvertObjectToJsonElement(jsonObject);
             }

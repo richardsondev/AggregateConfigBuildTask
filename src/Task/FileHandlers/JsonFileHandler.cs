@@ -11,13 +11,15 @@ namespace AggregateConfig.FileHandlers
             this.fileSystem = fileSystem;
         }
 
-        public object ReadInput(string inputPath)
+        /// <inheritdoc/>
+        public JsonElement ReadInput(string inputPath)
         {
-            var jsonContent = fileSystem.ReadAllText(inputPath);
-            return JsonSerializer.Deserialize<object>(jsonContent);
+            var json = fileSystem.ReadAllText(inputPath);
+            return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
-        public void WriteOutput(object mergedData, string outputPath)
+        /// <inheritdoc/>
+        public void WriteOutput(JsonElement? mergedData, string outputPath)
         {
             var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
             var jsonContent = JsonSerializer.Serialize(mergedData, jsonOptions);

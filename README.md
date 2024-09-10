@@ -239,8 +239,13 @@ This project is licensed under the MIT License. See the [LICENSE](https://github
 
 ## Third-Party Libraries
 
-This tool makes use of [YamlDotNet](https://github.com/aaubry/YamlDotNet) for YAML serialization and deserialization.
-YamlDotNet is licensed under the MIT License. For more details, please refer to the [YamlDotNet License](https://github.com/aaubry/YamlDotNet/blob/master/LICENSE.txt).
+This project leverages the following third-party libraries:
+
+- **[YamlDotNet](https://github.com/aaubry/YamlDotNet)**  
+  Used for YAML serialization and deserialization. YamlDotNet is distributed under the MIT License. For detailed information, refer to the [YamlDotNet License](https://github.com/aaubry/YamlDotNet/blob/master/LICENSE.txt).
+
+- **[YamlDotNet.System.Text.Json](https://github.com/IvanJosipovic/YamlDotNet.System.Text.Json)**  
+  Facilitates type handling for YAML serialization and deserialization, enhancing compatibility with System.Text.Json. This library is also distributed under the MIT License. For more details, see the [YamlDotNet.System.Text.Json License](https://github.com/IvanJosipovic/YamlDotNet.System.Text.Json/blob/main/LICENSE).
 
 ## Contributing
 

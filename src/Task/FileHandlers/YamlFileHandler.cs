@@ -1,5 +1,8 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.IO;
+using System.Text.Json;
+using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.System.Text.Json;
 
 namespace AggregateConfig.FileHandlers
 {
@@ -12,20 +15,22 @@ namespace AggregateConfig.FileHandlers
             this.fileSystem = fileSystem;
         }
 
-        public object ReadInput(string inputPath)
+        /// <inheritdoc/>
+        public JsonElement ReadInput(string inputPath)
         {
-            var yamlContent = fileSystem.ReadAllText(inputPath);
-
-            // Deserialize the YAML content
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                //.WithTypeConverter(new BooleanYamlTypeConverter())
-                .Build();
-
-            return deserializer.Deserialize<object>(yamlContent);
+            using (TextReader reader = fileSystem.OpenText(inputPath))
+            {
+                return new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
+                    .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
+                    .Build()
+                    .Deserialize<JsonElement>(reader);
+            }
         }
 
-        public void WriteOutput(object mergedData, string outputPath)
+        /// <inheritdoc/>
+        public void WriteOutput(JsonElement? mergedData, string outputPath)
         {
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)

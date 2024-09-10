@@ -1,7 +1,9 @@
-﻿namespace AggregateConfig.FileHandlers
+﻿using System.Text.Json;
+
+namespace AggregateConfig.FileHandlers
 {
     public interface IOutputWriter
     {
-        void WriteOutput(object mergedData, string outputPath);
+        void WriteOutput(JsonElement? mergedData, string outputPath);
     }
 }

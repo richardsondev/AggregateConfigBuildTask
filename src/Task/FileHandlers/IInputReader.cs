@@ -1,7 +1,9 @@
-﻿namespace AggregateConfig.FileHandlers
+﻿using System.Text.Json;
+
+namespace AggregateConfig.FileHandlers
 {
     public interface IInputReader
     {
-        object ReadInput(string inputPath);
+        JsonElement ReadInput(string inputPath);
     }
 }

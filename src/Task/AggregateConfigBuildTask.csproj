@@ -29,6 +29,7 @@
         <PackageReference Include="ReferenceTrimmer" Version="3.3.6" PrivateAssets="all" />
         <PackageReference Include="System.Text.Json" Version="8.0.4" PrivateAssets="all" />
         <PackageReference Include="YamlDotNet" Version="16.1.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,6 +44,7 @@
         <None Include="$(PkgYamlDotNet)/LICENSE.txt" Pack="true" PackagePath="/licenses/YamlDotNet">
             <Link>licenses/YamlDotNet/LICENSE.txt</Link>
         </None>
+        <None Include="$(OutputPath)/YamlDotNet.System.Text.Json.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
         <None Include="build/AggregateConfigBuildTask.targets" Pack="true" PackagePath="/build/AggregateConfigBuildTask.targets" />
         <None Include="../../LICENSE" Pack="true" PackagePath="/licenses/">
             <Link>licenses/LICENSE</Link>

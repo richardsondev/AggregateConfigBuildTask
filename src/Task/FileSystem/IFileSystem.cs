@@ -1,4 +1,6 @@
-﻿namespace AggregateConfig
+﻿using System.IO;
+
+namespace AggregateConfig
 {
     /// <summary>
     /// Interface for a file system abstraction, allowing various implementations to handle file operations.
@@ -66,5 +68,12 @@
         /// all necessary subdirectories are created. Throws an exception if the directory cannot be created.
         /// </remarks>
         void CreateDirectory(string directoryPath);
+
+        /// <summary>
+        /// Opens a text file for reading and returns a TextReader.
+        /// </summary>
+        /// <param name="path">The file path to open for reading.</param>
+        /// <returns>A TextReader for reading the file content.</returns>
+        TextReader OpenText(string path);
     }
 }

@@ -92,6 +92,7 @@ namespace AggregateConfig.Tests.Unit
 
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.IsNotNull(parameters.GetValue("options"));
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
         }
 
         [TestMethod]
@@ -233,6 +234,7 @@ namespace AggregateConfig.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
             Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
             Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
         }
@@ -311,6 +313,7 @@ namespace AggregateConfig.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
             Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
             Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
         }

@@ -64,6 +64,7 @@ namespace AggregateConfig.Tests.Unit
             {
                 return content;
             }
+
             throw new FileNotFoundException($"The file '{path}' was not found in the virtual file system.");
         }
 
@@ -121,6 +122,12 @@ namespace AggregateConfig.Tests.Unit
             path = EnsureTrailingDirectorySeparator(path);
 
             fileSystem[path] = string.Empty;
+        }
+
+        /// <inheritdoc />
+        public TextReader OpenText(string path)
+        {
+            return new StringReader(ReadAllText(path));
         }
 
         /// <summary>

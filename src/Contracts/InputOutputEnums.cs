@@ -4,6 +4,14 @@
     {
         Json,
         Arm,
+        ArmParameter = Arm,
+        Yml,
+        Yaml = Yml
+    }
+
+    public enum InputTypeEnum
+    {
+        Json,
         Yml,
         Yaml = Yml
     }

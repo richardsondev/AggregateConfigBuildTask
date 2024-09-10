@@ -9,7 +9,7 @@
 
 ## Features
 
-- Merge multiple YAML configuration files into a single output format (JSON, Azure ARM parameters, or YAML).
+- Merge multiple configuration files into a single output format (JSON, Azure ARM parameters, or YAML).
 - Support for injecting custom metadata (e.g., `ResourceGroup`, `Environment`) into the output.
 - Optionally include the source file name in each configuration entry.
 - Embed output files as resources in the assembly for easy inclusion in your project.
@@ -25,7 +25,10 @@ dotnet add package AggregateConfigBuildTask
 Alternatively, add the following line to your `.csproj` file:
 
 ```xml
-<PackageReference Include="AggregateConfigBuildTask" Version="1.0.0" />
+<PackageReference Include="AggregateConfigBuildTask" Version="1.0.1">
+  <PrivateAssets>all</PrivateAssets>
+  <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
+</PackageReference>
 ```
 
 ## Usage
@@ -37,13 +40,6 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <AdditionalProperty Include="ResourceGroup=TestRG" />
@@ -54,6 +50,7 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       AddSourceProperty="true"
+      InputType="Yaml"
       OutputType="Json"
       AdditionalProperties="@(AdditionalProperty)" />
   </Target>
@@ -74,13 +71,6 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <Target Name="AggregateConfigsForARM" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <AdditionalProperty Include="ResourceGroup=TestRG" />
@@ -90,7 +80,7 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
-      OutputType="ArmParameter"
+      OutputType="Arm"
       AdditionalProperties="@(AdditionalProperty)" />
   </Target>
 
@@ -103,13 +93,6 @@ You can also output the aggregated configuration back into YAML format:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
     <ItemGroup>
@@ -133,13 +116,6 @@ You can embed the output files (such as the generated JSON) as resources in the 
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <PackageReference Include="AggregateConfigBuildTask" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
     <ItemGroup>
@@ -173,8 +149,11 @@ In this example:
 - **AddSourceProperty** *(optional, default=false)*: Adds a `source` property to each object in the output, indicating the YAML file it originated from.
 - **OutputType** *(required)*: Determines the output format. Supported values:
   - `Json`: Outputs a regular JSON file.
-  - `ArmParameter`: Outputs an Azure ARM template parameter file.
+  - `Arm`: Outputs an Azure ARM template parameter file.
   - `Yaml`: Outputs a YAML file.
+- **InputType** *(optional, default=YAML)*: Determines the input format. Supported values:
+  - `Json`: Inputs are JSON files with a `.json` extension.
+  - `Yaml`: Inputs are YAML files with a `.yml` or `.yaml` extension.
 - **AdditionalProperties** *(optional)*: A collection of custom top-level properties to inject into the final output. Use the `ItemGroup` syntax to pass key-value pairs.
 
 ## Example YAML Input
@@ -256,7 +235,17 @@ resources:
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/richardsondev/AggregateConfigBuildTask/blob/main/LICENSE) file for details.
+
+## Third-Party Libraries
+
+This project leverages the following third-party libraries:
+
+- **[YamlDotNet](https://github.com/aaubry/YamlDotNet)**  
+  Used for YAML serialization and deserialization. YamlDotNet is distributed under the MIT License. For detailed information, refer to the [YamlDotNet License](https://github.com/aaubry/YamlDotNet/blob/master/LICENSE.txt).
+
+- **[YamlDotNet.System.Text.Json](https://github.com/IvanJosipovic/YamlDotNet.System.Text.Json)**  
+  Facilitates type handling for YAML serialization and deserialization, enhancing compatibility with System.Text.Json. This library is also distributed under the MIT License. For more details, see the [YamlDotNet.System.Text.Json License](https://github.com/IvanJosipovic/YamlDotNet.System.Text.Json/blob/main/LICENSE).
 
 ## Contributing
 

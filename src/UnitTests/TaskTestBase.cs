@@ -1,8 +1,8 @@
 ﻿using AggregateConfig.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,6 +92,7 @@ namespace AggregateConfig.Tests.Unit
 
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.IsNotNull(parameters.GetValue("options"));
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
         }
 
         [TestMethod]
@@ -233,6 +234,7 @@ namespace AggregateConfig.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
             Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
             Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
         }
@@ -282,6 +284,85 @@ namespace AggregateConfig.Tests.Unit
 
             // Assert: Verify the task fails due to invalid YAML
             Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        [Description("Test that boolean input values are correctly treated as booleans in the output.")]
+        public void ShouldCorrectlyParseBooleanValues()
+        {
+            // Arrange: Prepare sample YAML data.
+            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+        options:
+          - name: 'Option 1'
+            description: 'First option'
+            isEnabled: true");
+
+            var task = new AggregateConfig(mockFileSystem)
+            {
+                InputDirectory = testPath,
+                OutputFile = testPath + @"\output.json",
+                OutputType = OutputTypeEnum.Arm.ToString()
+            };
+            task.BuildEngine = Mock.Of<IBuildEngine>();
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify additional properties are included in ARM output
+            Assert.IsTrue(result);
+            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
+            JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
+            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+        }
+
+        [TestMethod]
+        [Description("Test that additional properties are correctly added to the ARM parameters output from JSON input.")]
+        public void ShouldIncludeAdditionalPropertiesInJsonInput()
+        {
+            // Arrange: Prepare sample JSON data.
+            mockFileSystem.WriteAllText($"{testPath}\\file1.json", @"
+    {
+        ""options"": [
+            {
+                ""name"": ""Option 1"",
+                ""description"": ""First option"",
+                ""isEnabled"": true
+            }
+        ]
+    }");
+
+            var task = new AggregateConfig(mockFileSystem)
+            {
+                InputType = InputTypeEnum.Json.ToString(),
+                InputDirectory = testPath,
+                OutputFile = testPath + @"\output.json",
+                OutputType = OutputTypeEnum.Arm.ToString(),
+                AddSourceProperty = true,
+                AdditionalProperties = new Dictionary<string, string>
+        {
+            { "Group", "TestRG" },
+            { "Environment", "Prod" }
+        }.Select(q => $"{q.Key}={q.Value}").ToArray()
+            };
+            task.BuildEngine = Mock.Of<IBuildEngine>();
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify additional properties are included in ARM output
+            Assert.IsTrue(result);
+            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
+            JObject parameters = (JObject)armTemplate["parameters"];
+            Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
+            Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
+            Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
+            Assert.AreEqual("file1", parameters.GetValue("options")["value"].First()["source"].Value<string>());
+            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
         }
     }
 }

@@ -39,11 +39,17 @@ namespace AggregateConfig
         {
             return Directory.Exists(path);
         }
-        
+
         /// <inheritdoc/>
         public void CreateDirectory(string directoryPath)
         {
             Directory.CreateDirectory(directoryPath);
+        }
+
+        /// <inheritdoc/>
+        public TextReader OpenText(string path)
+        {
+            return File.OpenText(path);
         }
     }
 }

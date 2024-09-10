@@ -64,8 +64,7 @@
             InputDirectory="$(MSBuildProjectDirectory)\out\arm"
             OutputFile="$(MSBuildProjectDirectory)\out\arm2yml\out.yml"
             OutputType="Yaml"
-            AddSourceProperty="true">
-        </AggregateConfig>
+            AddSourceProperty="true" />
 
         <!-- Embed output.json and output.parameters.json as resources in the assembly -->
         <ItemGroup>

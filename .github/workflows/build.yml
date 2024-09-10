@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches:
       - main
@@ -27,13 +29,16 @@ jobs:
       id: get_version
       shell: pwsh
       run: |
-        # Set version
-        $TAG = (git describe --tags --exact-match 2>$null) -or ""
-
-        if ($TAG -like "v*") {
-            # Remove the 'v' prefix
-            $VERSION = $TAG.Substring(1)
+        $TAG = if ($env:GITHUB_REF -like "refs/tags/v*") { 
+            $env:GITHUB_REF -replace 'refs/tags/v', ''
         } else {
+            ""
+        }
+
+        if ($TAG -ne "") {
+            $VERSION = $TAG
+        } else {
+            # Fallback to commit hash if no tag
             $COMMIT_HASH = git rev-parse --short HEAD
             $VERSION = "0.0.1-$COMMIT_HASH"
         }

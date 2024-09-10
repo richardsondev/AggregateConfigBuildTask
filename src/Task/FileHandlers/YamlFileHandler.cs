@@ -34,6 +34,8 @@ namespace AggregateConfig.FileHandlers
         {
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
+                .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
                 .Build();
             var yamlContent = serializer.Serialize(mergedData);
             fileSystem.WriteAllText(outputPath, yamlContent);

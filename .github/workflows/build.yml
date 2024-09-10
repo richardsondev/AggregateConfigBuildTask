@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 10
 
     outputs:
       VERSION: ${{ steps.get_version.outputs.VERSION }}
@@ -60,6 +61,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     steps:
     - name: Checkout repository

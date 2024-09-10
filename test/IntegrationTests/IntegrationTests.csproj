@@ -69,8 +69,8 @@
 
         <!-- Embed output.json and output.parameters.json as resources in the assembly -->
         <ItemGroup>
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\test.json" />
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\test.parameters.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\json\test.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\arm\test.parameters.json" />
         </ItemGroup>
     </Target>
 

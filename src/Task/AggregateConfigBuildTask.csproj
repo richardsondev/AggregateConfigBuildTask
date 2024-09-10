@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <PackageId>AggregateConfigBuildTask</PackageId>
-        <Version>1.0.2</Version>
+        <Version Condition=" '$(Version)' == '' ">0.0.1</Version>
         <Authors>richardsondev</Authors>
         <Owner>richardsondev</Owner>
         <Company>richardsondev</Company>
@@ -17,32 +17,36 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/richardsondev/AggregateConfigBuildTask</RepositoryUrl>
         <PackageProjectUrl>https://github.com/richardsondev/AggregateConfigBuildTask</PackageProjectUrl>
-        <PackageReleaseNotes>https://github.com/richardsondev/AggregateConfigBuildTask/releases/tag/v1.0.2</PackageReleaseNotes>
+        <PackageReleaseNotes>https://github.com/richardsondev/AggregateConfigBuildTask/releases/tag/v$(Version)</PackageReleaseNotes>
         <PackageReadmeFile>docs/README.md</PackageReadmeFile>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ClearOutputDirectory>False</ClearOutputDirectory>
     </PropertyGroup>
-
-    <!-- Build time packages-->
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Build.Framework" Version="17.11.4" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.11.4" PrivateAssets="all" />
-        <PackageReference Include="ReferenceTrimmer" Version="3.3.6" PrivateAssets="all" />
-    </ItemGroup>
-
-    <!-- Runtime packages -->
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
-        <PackageReference Include="System.Text.Json" Version="8.0.4" />
-        <PackageReference Include="YamlDotNet" Version="16.1.0" />
-        <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.0" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="../Contracts/Contracts.csproj" PrivateAssets="all" />
     </ItemGroup>
 
+    <!-- Build time packages-->
     <ItemGroup>
-        <None Include="$(OutputPath)/Contracts.dll" Pack="true" PackagePath="/lib/netstandard2.0/" />
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.11.4" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.11.4" PrivateAssets="all" />
+        <PackageReference Include="ILRepack.Lib.MSBuild.Task " Version="2.0.34.2" PrivateAssets="all" />
+        <PackageReference Include="ReferenceTrimmer" Version="3.3.6" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- Runtime packages -->
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" PrivateAssets="all" />
+        <PackageReference Include="YamlDotNet" Version="16.1.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(PkgYamlDotNet)/LICENSE.txt" Pack="true" PackagePath="/licenses/YamlDotNet">
+            <Link>licenses/YamlDotNet/LICENSE.txt</Link>
+        </None>
         <None Include="build/AggregateConfigBuildTask.targets" Pack="true" PackagePath="/build/AggregateConfigBuildTask.targets" />
         <None Include="../../LICENSE" Pack="true" PackagePath="/licenses/">
             <Link>licenses/LICENSE</Link>

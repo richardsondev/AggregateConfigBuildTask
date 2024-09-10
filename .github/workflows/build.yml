@@ -13,26 +13,41 @@ jobs:
   build:
     runs-on: windows-latest
 
+    outputs:
+      VERSION: ${{ steps.get_version.outputs.VERSION }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
 
+    - name: Set version
+      id: get_version
+      run: |
+        TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
+        if [[ "$TAG" == v* ]]; then
+          VERSION=${TAG:1} # Remove the 'v' prefix
+        else
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          VERSION="0.0.1-$COMMIT_HASH"
+        fi
+        echo "::set-output name=VERSION::$VERSION"
+
     - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
       run: dotnet restore src/AggregateConfigBuildTask.sln
 
     - name: Build AggregateConfigBuildTask solution in Release mode
-      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Run tests for AggregateConfigBuildTask solution
-      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Upload NuGetPackage artifact
       uses: actions/upload-artifact@v4
       with:
         name: NuGetPackage
-        path: src/Task/bin/Release/AggregateConfigBuildTask.1.0.2.nupkg
+        path: src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
 
   integration_tests:
     needs: build
@@ -65,10 +80,10 @@ jobs:
       run: dotnet restore test/IntegrationTests.sln
 
     - name: Build IntegrationTests in Release mode
-      run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror
+      run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}
 
     - name: Run IntegrationTests
-      run: dotnet test test/IntegrationTests.sln --configuration Release -warnaserror
+      run: dotnet test test/IntegrationTests.sln --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}
 
     - name: Upload integration results artifact
       uses: actions/upload-artifact@v4

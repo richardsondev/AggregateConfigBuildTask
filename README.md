@@ -25,7 +25,7 @@ dotnet add package AggregateConfigBuildTask
 Alternatively, add the following line to your `.csproj` file:
 
 ```xml
-<PackageReference Include="AggregateConfigBuildTask" Version="1.0.2" />
+<PackageReference Include="AggregateConfigBuildTask" Version="[LATEST]" />
 ```
 
 ## Usage

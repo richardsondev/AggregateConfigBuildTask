@@ -140,7 +140,10 @@ namespace AggregateConfig.Tests.Unit
           - name: 'Option 2'
             description: 'Second option'
           - name: 'Option 3'
-            description: 'Third option'");
+            description: 'Third option'
+        text:
+          - name: 'Text 1'
+            description: 'Text'");
 
             // Create the task instance with the mock file system
             var task = new AggregateConfig(mockFileSystem)
@@ -165,6 +168,8 @@ namespace AggregateConfig.Tests.Unit
             Assert.AreEqual("file2", json["options"][1]["source"]);
             Assert.IsTrue(json["options"][2].ContainsKey("source"));
             Assert.AreEqual("file2", json["options"][2]["source"]);
+            Assert.IsTrue(json["text"][0].ContainsKey("source"));
+            Assert.AreEqual("file2", json["text"][0]["source"]);
         }
 
         [TestMethod]

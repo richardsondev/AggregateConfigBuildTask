@@ -24,15 +24,20 @@ jobs:
 
     - name: Set version
       id: get_version
+      shell: pwsh
       run: |
-        TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
-        if [[ "$TAG" == v* ]]; then
-          VERSION=${TAG:1} # Remove the 'v' prefix
-        else
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          VERSION="0.0.1-$COMMIT_HASH"
-        fi
-        echo "::set-output name=VERSION::$VERSION"
+        # Set version
+        $TAG = (git describe --tags --exact-match 2>$null) -or ""
+
+        if ($TAG -like "v*") {
+            # Remove the 'v' prefix
+            $VERSION = $TAG.Substring(1)
+        } else {
+            $COMMIT_HASH = git rev-parse --short HEAD
+            $VERSION = "0.0.1-$COMMIT_HASH"
+        }
+
+        Write-Output "::set-output name=VERSION::$VERSION"
 
     - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
       run: dotnet restore src/AggregateConfigBuildTask.sln

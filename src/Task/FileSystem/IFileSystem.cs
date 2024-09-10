@@ -75,5 +75,18 @@ namespace AggregateConfig
         /// <param name="path">The file path to open for reading.</param>
         /// <returns>A TextReader for reading the file content.</returns>
         TextReader OpenText(string path);
+
+        /// <summary>
+        /// Opens a file at the specified path for reading.
+        /// </summary>
+        /// <param name="inputPath">The path of the file to be opened.</param>
+        /// <returns>
+        /// A <see cref="FileStream"/> that represents the file opened for reading.
+        /// </returns>
+        /// <remarks>
+        /// The returned <see cref="FileStream"/> provides read-only access to the file.
+        /// Ensure that the file exists and the application has appropriate read permissions.
+        /// </remarks>
+        Stream OpenRead(string inputPath);
     }
 }

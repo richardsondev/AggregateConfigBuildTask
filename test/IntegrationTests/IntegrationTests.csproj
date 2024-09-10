@@ -33,14 +33,14 @@
         <!-- Run the AggregateConfig to generate the output.json -->
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.json"
+            OutputFile="$(MSBuildProjectDirectory)\out\json\test.json"
             OutputType="Json"
             AddSourceProperty="true" />
 
         <!-- Run the AggregateConfig to generate the output.yml -->
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.yml"
+            OutputFile="$(MSBuildProjectDirectory)\out\yaml\test.yml"
             OutputType="Yaml"
             AddSourceProperty="true" />
 
@@ -52,10 +52,19 @@
         </ItemGroup>
         <AggregateConfig
             InputDirectory="Configs"
-            OutputFile="$(MSBuildProjectDirectory)\out\test.parameters.json"
+            OutputFile="$(MSBuildProjectDirectory)\out\arm\test.parameters.json"
             OutputType="Arm"
             AddSourceProperty="true"
             AdditionalProperties="@(AdditionalProperty)">
+        </AggregateConfig>
+
+        <!-- Run the AggregateConfig to convert the generated ARM parameter file back to yml -->
+        <AggregateConfig
+            InputType="Arm"
+            InputDirectory="$(MSBuildProjectDirectory)\out\arm"
+            OutputFile="$(MSBuildProjectDirectory)\out\arm2yml\out.yml"
+            OutputType="Yaml"
+            AddSourceProperty="true">
         </AggregateConfig>
 
         <!-- Embed output.json and output.parameters.json as resources in the assembly -->
@@ -71,8 +80,8 @@
             <AdditionalProperty Include="Environment=Production" />
         </ItemGroup>
 
-        <!--InputType="Yaml"-->
         <AggregateConfig
+          InputType="Yaml"
           InputDirectory="Configs"
           OutputFile="$(MSBuildProjectDirectory)\out\output.json"
           AddSourceProperty="true"

@@ -40,9 +40,6 @@ jobs:
 
         Write-Output "::set-output name=VERSION::$VERSION"
 
-    - name: Restore NuGet packages for src/AggregateConfigBuildTask.sln
-      run: dotnet restore src/AggregateConfigBuildTask.sln
-
     - name: Build AggregateConfigBuildTask solution in Release mode
       run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
@@ -82,9 +79,6 @@ jobs:
 
     - name: Add local NuGet source
       run: dotnet nuget add source ${{ github.workspace }}/nuget/local --name AggregateConfigBuildTask
-
-    - name: Restore IntegrationTests with custom AggregateConfigBuildTask package
-      run: dotnet restore test/IntegrationTests.sln
 
     - name: Build IntegrationTests in Release mode
       run: dotnet build test/IntegrationTests.sln --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}

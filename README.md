@@ -150,6 +150,7 @@ In this example:
   - `Yaml`: Outputs a YAML file.
 - **InputType** *(optional, default=YAML)*: Determines the input format. Supported values:
   - `Json`: Inputs are JSON files with a `.json` extension.
+  - `Arm`: Inputs are Azure ARM template parameter files with a `.json` extension.
   - `Yaml`: Inputs are YAML files with a `.yml` or `.yaml` extension.
 - **AdditionalProperties** *(optional)*: A collection of custom top-level properties to inject into the final output. Use the `ItemGroup` syntax to pass key-value pairs.
 

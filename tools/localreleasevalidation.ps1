@@ -13,7 +13,7 @@ $nugetSourceName = "AggregateConfigBuildTask"
 
 # Step 2: Restore NuGet packages for AggregateConfigBuildTask.sln
 Write-Host "Restoring NuGet packages for $solutionPath..."
-dotnet restore $solutionPath
+#dotnet restore $solutionPath
 
 # Step 3: Build the src/AggregateConfigBuildTask.sln project in Release mode
 Write-Host "Building $solutionPath in Release mode..."
@@ -47,7 +47,7 @@ dotnet nuget add source $localNugetDir --name $nugetSourceName
 
 # Step 8: Restore NuGet packages for the integration tests project
 Write-Host "Restoring NuGet packages for $testProjectPath..."
-dotnet restore $testProjectPath
+#dotnet restore $testProjectPath
 
 # Step 9: Build the integration tests project in Release mode
 Write-Host "Building $testProjectPath in Release mode..."

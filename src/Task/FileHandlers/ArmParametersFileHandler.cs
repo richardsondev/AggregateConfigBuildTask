@@ -1,16 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AggregateConfig.FileHandlers
 {
-    public class ArmParametersFileHandler : IOutputWriter
+    public class ArmParametersFileHandler : IOutputWriter, IInputReader
     {
         IFileSystem fileSystem;
 
         internal ArmParametersFileHandler(IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
+        }
+
+        /// <inheritdoc/>
+        public JsonElement ReadInput(string inputPath)
+        {
+            using (var stream = fileSystem.OpenRead(inputPath))
+            {
+                using (var jsonDoc = JsonDocument.Parse(stream))
+                {
+                    if (jsonDoc.RootElement.TryGetProperty("parameters", out JsonElement parameters))
+                    {
+                        var modifiedParameters = new JsonObject();
+
+                        foreach (var parameter in parameters.EnumerateObject())
+                        {
+                            if (parameter.Value.ValueKind == JsonValueKind.Object)
+                            {
+                                var paramObject = ConvertElementToNode(parameter.Value).AsObject();
+
+                                // If the top-level object contains the "value" key, return the value
+                                if (paramObject.ContainsKey("value"))
+                                {
+                                    modifiedParameters[parameter.Name] = paramObject["value"]?.DeepClone();
+                                }
+                            }
+                        }
+
+                        var modifiedJson = modifiedParameters.ToJsonString();
+                        return JsonSerializer.Deserialize<JsonElement>(modifiedJson);
+                    }
+
+                    return jsonDoc.RootElement.Clone();
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -77,6 +112,17 @@ namespace AggregateConfig.FileHandlers
                 default:
                     throw new ArgumentException("Unsupported type for ARM template parameters.");
             }
+        }
+
+        private JsonNode ConvertElementToNode(JsonElement element)
+        {
+            // Use GetRawText to get the JSON string representation of the JsonElement
+            var jsonString = element.GetRawText();
+
+            // Parse the string into a JsonNode
+            var jsonNode = JsonNode.Parse(jsonString);
+
+            return jsonNode;
         }
     }
 }

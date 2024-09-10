@@ -14,8 +14,10 @@ namespace AggregateConfig.FileHandlers
         /// <inheritdoc/>
         public JsonElement ReadInput(string inputPath)
         {
-            var json = fileSystem.ReadAllText(inputPath);
-            return JsonSerializer.Deserialize<JsonElement>(json);
+            using (var json = fileSystem.OpenRead(inputPath))
+            {
+                return JsonSerializer.Deserialize<JsonElement>(json);
+            }
         }
 
         /// <inheritdoc/>

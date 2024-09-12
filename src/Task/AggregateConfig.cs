@@ -3,6 +3,7 @@ using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Task = Microsoft.Build.Utilities.Task;
 
@@ -43,6 +44,8 @@ namespace AggregateConfigBuildTask
         {
             try
             {
+                EmitHeader();
+
                 OutputFile = Path.GetFullPath(OutputFile);
 
                 if (!Enum.TryParse(OutputType, out OutputTypeEnum outputType) ||
@@ -77,7 +80,7 @@ namespace AggregateConfigBuildTask
                 }
 
                 var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
-                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary).GetAwaiter().GetResult();
+                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, Log).GetAwaiter().GetResult();
 
                 var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);
@@ -87,10 +90,20 @@ namespace AggregateConfigBuildTask
             }
             catch (Exception ex)
             {
-                Log.LogError("An unknown exception occured: {0}", ex.Message);
+                Log.LogError("An unknown exception occurred: {0}", ex.Message);
                 Log.LogErrorFromException(ex, true, true, null);
                 return false;
             }
+        }
+
+        private void EmitHeader()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var informationalVersion = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+
+            Log.LogMessage($"AggregateConfig Version: {informationalVersion}");
         }
     }
 }

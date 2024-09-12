@@ -175,8 +175,9 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="finalResult">The object that is expected to be a JSON object (JsonElement) where additional properties will be injected.</param>
         /// <param name="additionalPropertiesDictionary">A dictionary of additional properties to inject.</param>
+        /// <param name="log">Logger reference.</param>
         /// <returns>True if the properties were successfully injected, false otherwise.</returns>
-        public static async Task<JsonElement?> InjectAdditionalProperties(JsonElement? finalResult, Dictionary<string, string> additionalPropertiesDictionary)
+        public static async Task<JsonElement?> InjectAdditionalProperties(JsonElement? finalResult, Dictionary<string, string> additionalPropertiesDictionary, TaskLoggingHelper log)
         {
             if (additionalPropertiesDictionary?.Count > 0)
             {
@@ -194,7 +195,7 @@ namespace AggregateConfigBuildTask
                 }
                 else
                 {
-                    Console.Error.WriteLine("Additional properties could not be injected since the top-level is not a JSON object.");
+                    log.LogWarning("Additional properties could not be injected since the top-level is not a JSON object.");
                     return finalResult;
                 }
             }

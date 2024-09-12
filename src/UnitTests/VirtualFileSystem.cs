@@ -6,22 +6,16 @@ using System.Text.RegularExpressions;
 
 namespace AggregateConfigBuildTask.Tests.Unit
 {
-    internal class VirtualFileSystem : IFileSystem
+    internal class VirtualFileSystem(bool isWindowsMode = true) : IFileSystem
     {
-        private readonly bool isWindowsMode = false;
-        private readonly Dictionary<string, string> fileSystem;
+        private readonly bool isWindowsMode = isWindowsMode;
+        private readonly Dictionary<string, string> fileSystem = new(
+                isWindowsMode ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+            );
 
         private RegexOptions RegexOptions => isWindowsMode ? RegexOptions.IgnoreCase : RegexOptions.None;
         private StringComparison StringComparison => isWindowsMode ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         private string EnvironmentLineBreak => isWindowsMode ? "\r\n" : "\n";
-
-        public VirtualFileSystem(bool isWindowsMode = true)
-        {
-            this.isWindowsMode = isWindowsMode;
-            this.fileSystem = new Dictionary<string, string>(
-                isWindowsMode ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
-            );
-        }
 
         /// <inheritdoc/>
         public string[] GetFiles(string path, string searchPattern)
@@ -44,7 +38,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 }
             }
 
-            return files.ToArray();
+            return [.. files];
         }
 
         /// <inheritdoc/>
@@ -163,7 +157,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         /// <summary>
         /// Converts a file search pattern (with * and ?) to a regex pattern.
         /// </summary>
-        private string ConvertPatternToRegex(string searchPattern)
+        private static string ConvertPatternToRegex(string searchPattern)
         {
             // Escape special regex characters except for * and ?
             string escapedPattern = Regex.Escape(searchPattern);

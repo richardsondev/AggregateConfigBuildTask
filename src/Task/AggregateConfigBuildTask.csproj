@@ -33,6 +33,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <NoPackageAnalysis>true</NoPackageAnalysis>
         <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>

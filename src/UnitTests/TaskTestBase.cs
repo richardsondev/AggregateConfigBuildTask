@@ -1,4 +1,4 @@
-﻿using AggregateConfig.Contracts;
+﻿using AggregateConfigBuildTask.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -6,8 +6,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
-namespace AggregateConfig.Tests.Unit
+namespace AggregateConfigBuildTask.Tests.Unit
 {
     public class TaskTestBase
     {
@@ -22,10 +23,8 @@ namespace AggregateConfig.Tests.Unit
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
         [Description("Test that YAML files are merged into correct JSON output.")]
-        public void ShouldGenerateJsonOutput(bool isWindows)
+        public void ShouldGenerateJsonOutput()
         {
             // Arrange: Prepare sample YAML data in the mock file system.
             mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
@@ -42,9 +41,9 @@ namespace AggregateConfig.Tests.Unit
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
                 OutputType = OutputTypeEnum.Json.ToString(),
-                AddSourceProperty = true
+                AddSourceProperty = true,
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -77,9 +76,9 @@ namespace AggregateConfig.Tests.Unit
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
                 OutputType = OutputTypeEnum.Arm.ToString(),
-                AddSourceProperty = true
+                AddSourceProperty = true,
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -111,9 +110,9 @@ namespace AggregateConfig.Tests.Unit
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
                 OutputType = OutputTypeEnum.Json.ToString(),
-                AddSourceProperty = true
+                AddSourceProperty = true,
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -134,13 +133,17 @@ namespace AggregateConfig.Tests.Unit
             mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
+            description: 'First option'
+            additionalOptions:
+              value: 'Good day'");
             mockFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
             description: 'Second option'
           - name: 'Option 3'
             description: 'Third option'
+            additionalOptions:
+              value: 'Good night'
         text:
           - name: 'Text 1'
             description: 'Text'");
@@ -151,9 +154,9 @@ namespace AggregateConfig.Tests.Unit
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
                 OutputType = OutputTypeEnum.Json.ToString(),
-                AddSourceProperty = true
+                AddSourceProperty = true,
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -161,15 +164,11 @@ namespace AggregateConfig.Tests.Unit
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
-            var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, string>>>>(output);
-            Assert.IsTrue(json["options"][0].ContainsKey("source"));
-            Assert.AreEqual("file1", json["options"][0]["source"]);
-            Assert.IsTrue(json["options"][1].ContainsKey("source"));
-            Assert.AreEqual("file2", json["options"][1]["source"]);
-            Assert.IsTrue(json["options"][2].ContainsKey("source"));
-            Assert.AreEqual("file2", json["options"][2]["source"]);
-            Assert.IsTrue(json["text"][0].ContainsKey("source"));
-            Assert.AreEqual("file2", json["text"][0]["source"]);
+            var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
+            Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 1", "file1"));
+            Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 2", "file2"));
+            Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 3", "file2"));
+            Assert.IsTrue(OptionExistsWithSource(json["text"], "Text 1", "file2"));
         }
 
         [TestMethod]
@@ -192,9 +191,9 @@ namespace AggregateConfig.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment\\=Key", "Prod\\=West" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray()
+                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -227,9 +226,9 @@ namespace AggregateConfig.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray()
+                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -253,9 +252,9 @@ namespace AggregateConfig.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString()
+                OutputType = OutputTypeEnum.Json.ToString(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -280,9 +279,9 @@ namespace AggregateConfig.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString()
+                OutputType = OutputTypeEnum.Json.ToString(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Expect the task to fail
             bool result = task.Execute();
@@ -306,9 +305,9 @@ namespace AggregateConfig.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Arm.ToString()
+                OutputType = OutputTypeEnum.Arm.ToString(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -350,9 +349,9 @@ namespace AggregateConfig.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray()
+                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -402,9 +401,9 @@ namespace AggregateConfig.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray()
+                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-            task.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act: Execute the task
             bool result = task.Execute();
@@ -420,6 +419,70 @@ namespace AggregateConfig.Tests.Unit
             Assert.AreEqual("file1.parameters", parameters.GetValue("options")["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
             Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+        }
+
+        [TestMethod]
+        [Description("Stress test to verify the source property is correctly added for 1,000 files with 10 options each.")]
+        [Timeout(60000)]
+        public void StressTest_ShouldAddSourcePropertyManyFiles()
+        {
+            // Arrange: Prepare sample YAML data.
+            const int totalFiles = 1_000;
+            const int totalOptionsPerFile = 10;
+
+            for (int fileIndex = 1; fileIndex <= totalFiles; fileIndex++)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("options:");
+
+                for (int optionIndex = 1; optionIndex <= totalOptionsPerFile; optionIndex++)
+                {
+                    sb.AppendLine($"  - name: 'Option {optionIndex}'");
+                    sb.AppendLine($"    description: 'Description for Option {optionIndex}'");
+                }
+
+                // Write each YAML file to the mock file system
+                mockFileSystem.WriteAllText($"{testPath}\\file{fileIndex}.yml", sb.ToString());
+            }
+
+            var task = new AggregateConfig(mockFileSystem)
+            {
+                InputDirectory = testPath,
+                OutputFile = testPath + @"\output.json",
+                OutputType = OutputTypeEnum.Json.ToString(),
+                AddSourceProperty = true,
+                BuildEngine = Mock.Of<IBuildEngine>()
+            };
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify that the source property was added correctly for all files and options
+            Assert.IsTrue(result);
+            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
+
+            int optionIndexInTotal = 0;
+
+            for (int fileIndex = 1; fileIndex <= totalFiles; fileIndex++)
+            {
+                for (int optionIndex = 1; optionIndex <= totalOptionsPerFile; optionIndex++, optionIndexInTotal++)
+                {
+                    Assert.IsTrue(OptionExistsWithSource(json["options"], $"Option {optionIndex}", $"file{fileIndex}"));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if an option exists with a given name and source
+        /// </summary>
+        private static bool OptionExistsWithSource(List<Dictionary<string, object>> options, string optionName, string expectedSource)
+        {
+            return options.Any(option =>
+                option.ContainsKey("name") &&
+                (string)option["name"] == optionName &&
+                option.ContainsKey("source") &&
+                (string)option["source"] == expectedSource);
         }
     }
 }

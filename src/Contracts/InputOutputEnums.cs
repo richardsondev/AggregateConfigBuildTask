@@ -1,4 +1,4 @@
-﻿namespace AggregateConfig.Contracts
+﻿namespace AggregateConfigBuildTask.Contracts
 {
     public enum OutputTypeEnum
     {

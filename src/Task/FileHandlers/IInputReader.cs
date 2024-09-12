@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public interface IInputReader
     {
-        JsonElement ReadInput(string inputPath);
+        ValueTask<JsonElement> ReadInput(string inputPath);
     }
 }

@@ -1,14 +1,15 @@
 ﻿using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.System.Text.Json;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public class YamlFileHandler : IOutputWriter, IInputReader
     {
-        IFileSystem fileSystem;
+        readonly IFileSystem fileSystem;
 
         internal YamlFileHandler(IFileSystem fileSystem)
         {
@@ -16,16 +17,18 @@ namespace AggregateConfig.FileHandlers
         }
 
         /// <inheritdoc/>
-        public JsonElement ReadInput(string inputPath)
+        public ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (TextReader reader = fileSystem.OpenText(inputPath))
             {
-                return new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                    .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
-                    .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
-                    .Build()
-                    .Deserialize<JsonElement>(reader);
+                return new ValueTask<JsonElement>(
+                    Task.FromResult(
+                        new DeserializerBuilder()
+                            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                            .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
+                            .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
+                            .Build()
+                            .Deserialize<JsonElement>(reader)));
             }
         }
 

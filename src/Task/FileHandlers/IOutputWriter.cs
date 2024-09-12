@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public interface IOutputWriter
     {

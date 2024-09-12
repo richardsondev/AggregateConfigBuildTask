@@ -1,4 +1,4 @@
-namespace AggregateConfig.Tests.Unit
+namespace AggregateConfigBuildTask.Tests.Unit
 {
     [TestClass]
     public class TaskWindowsTests : TaskTestBase

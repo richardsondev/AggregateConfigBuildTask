@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask
 {
@@ -11,7 +13,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="dictionary">A dictionary containing string keys and JsonElement values.</param>
         /// <returns>A JsonElement representing the dictionary.</returns>
-        public static JsonElement ConvertToJsonElement(Dictionary<string, JsonElement> dictionary)
+        public static Task<JsonElement> ConvertToJsonElement(Dictionary<string, JsonElement> dictionary)
         {
             return ConvertObjectToJsonElement(dictionary);
         }
@@ -21,7 +23,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="list">A list containing JsonElement objects.</param>
         /// <returns>A JsonElement representing the list.</returns>
-        public static JsonElement ConvertToJsonElement(List<JsonElement> list)
+        public static Task<JsonElement> ConvertToJsonElement(List<JsonElement> list)
         {
             return ConvertObjectToJsonElement(list);
         }
@@ -93,10 +95,23 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="value">The object to convert to JsonElement.</param>
         /// <returns>A JsonElement representing the object.</returns>
-        public static JsonElement ConvertObjectToJsonElement(object value)
+        public static async Task<JsonElement> ConvertObjectToJsonElement(object value)
         {
-            var json = JsonSerializer.Serialize(value);
-            return JsonDocument.Parse(json).RootElement;
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await JsonSerializer.SerializeAsync(memoryStream, value);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                using (var jsonDocument = await JsonDocument.ParseAsync(memoryStream))
+                {
+                    return jsonDocument.RootElement.Clone();
+                }
+            }
         }
 
         /// <summary>

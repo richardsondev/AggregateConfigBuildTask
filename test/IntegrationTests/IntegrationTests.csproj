@@ -12,13 +12,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AggregateConfigBuildTask" Version="$(Version)">
-            <PrivateAssets>all</PrivateAssets>
-            <ExcludeAssets>native;contentFiles;analyzers;runtime</ExcludeAssets>
-        </PackageReference>
+        <PackageReference Include="AggregateConfigBuildTask" Version="[$(Version)]" />
         <PackageReference Include="coverlet.collector" Version="6.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-        <PackageReference Include="Moq" Version="4.20.71" />
         <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
         <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
         <PackageReference Include="System.Text.Json" Version="8.0.4" />

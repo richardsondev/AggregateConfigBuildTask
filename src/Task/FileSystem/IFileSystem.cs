@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace AggregateConfig
+namespace AggregateConfigBuildTask
 {
     /// <summary>
     /// Interface for a file system abstraction, allowing various implementations to handle file operations.

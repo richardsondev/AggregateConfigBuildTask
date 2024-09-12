@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public class ArmParametersFileHandler : IOutputWriter, IInputReader
     {
-        IFileSystem fileSystem;
+        readonly IFileSystem fileSystem;
 
         internal ArmParametersFileHandler(IFileSystem fileSystem)
         {
@@ -15,7 +16,7 @@ namespace AggregateConfig.FileHandlers
         }
 
         /// <inheritdoc/>
-        public JsonElement ReadInput(string inputPath)
+        public ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (var stream = fileSystem.OpenRead(inputPath))
             {
@@ -40,10 +41,10 @@ namespace AggregateConfig.FileHandlers
                         }
 
                         var modifiedJson = modifiedParameters.ToJsonString();
-                        return JsonSerializer.Deserialize<JsonElement>(modifiedJson);
+                        return new ValueTask<JsonElement>(Task.FromResult(JsonSerializer.Deserialize<JsonElement>(modifiedJson)));
                     }
 
-                    return jsonDoc.RootElement.Clone();
+                    return new ValueTask<JsonElement>(Task.FromResult(jsonDoc.RootElement.Clone()));
                 }
             }
         }

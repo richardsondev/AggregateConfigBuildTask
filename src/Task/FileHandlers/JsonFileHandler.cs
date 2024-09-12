@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public class JsonFileHandler : IOutputWriter, IInputReader
     {
-        IFileSystem fileSystem;
+        readonly IFileSystem fileSystem;
 
         internal JsonFileHandler(IFileSystem fileSystem)
         {
@@ -12,11 +13,11 @@ namespace AggregateConfig.FileHandlers
         }
 
         /// <inheritdoc/>
-        public JsonElement ReadInput(string inputPath)
+        public ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (var json = fileSystem.OpenRead(inputPath))
             {
-                return JsonSerializer.Deserialize<JsonElement>(json);
+                return JsonSerializer.DeserializeAsync<JsonElement>(json);
             }
         }
 

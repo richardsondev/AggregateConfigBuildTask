@@ -51,22 +51,23 @@ namespace AggregateConfigBuildTask
             if (body == null) throw new ArgumentNullException(nameof(body));
             if (degreeOfParallelism < 1) throw new ArgumentOutOfRangeException(nameof(degreeOfParallelism), "Degree of parallelism must be at least 1.");
 
-            var semaphore = new SemaphoreSlim(degreeOfParallelism);
-
-            var tasks = source.Select(async item =>
+            using (var semaphore = new SemaphoreSlim(degreeOfParallelism))
             {
-                await semaphore.WaitAsync();
-                try
+                var tasks = source.Select(async item =>
                 {
-                    await body(item);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
+                    await semaphore.WaitAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await body(item).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                });
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
         }
     }
 }

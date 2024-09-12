@@ -1,8 +1,8 @@
-﻿using AggregateConfig.Contracts;
+﻿using AggregateConfigBuildTask.Contracts;
 using System;
 using System.Collections.Generic;
 
-namespace AggregateConfig.FileHandlers
+namespace AggregateConfigBuildTask.FileHandlers
 {
     public static class FileHandlerFactory
     {

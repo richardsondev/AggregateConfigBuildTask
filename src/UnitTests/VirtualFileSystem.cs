@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace AggregateConfig.Tests.Unit
+namespace AggregateConfigBuildTask.Tests.Unit
 {
     internal class VirtualFileSystem : IFileSystem
     {

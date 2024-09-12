@@ -1,17 +1,14 @@
-﻿using AggregateConfig.Contracts;
-using AggregateConfig.FileHandlers;
-using AggregateConfigBuildTask;
+﻿using AggregateConfigBuildTask.Contracts;
+using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Task = Microsoft.Build.Utilities.Task;
 
 [assembly: InternalsVisibleTo("AggregateConfig.Tests.UnitTests")]
 
-namespace AggregateConfig
+namespace AggregateConfigBuildTask
 {
     public class AggregateConfig : Task
     {
@@ -46,9 +43,6 @@ namespace AggregateConfig
         {
             try
             {
-                bool hasError = false;
-                JsonElement? finalResult = null;
-
                 OutputFile = Path.GetFullPath(OutputFile);
 
                 if (!Enum.TryParse(OutputType, out OutputTypeEnum outputType) ||
@@ -74,48 +68,7 @@ namespace AggregateConfig
                     fileSystem.CreateDirectory(directoryPath);
                 }
 
-                var expectedExtensions = FileHandlerFactory.GetExpectedFileExtensions(inputType);
-                var files = fileSystem.GetFiles(InputDirectory, "*.*")
-                    .Where(file => expectedExtensions.Contains(Path.GetExtension(file).ToLower()))
-                    .ToList();
-
-                foreach (var file in files)
-                {
-                    Log.LogMessage(MessageImportance.High, "- Found file {0}", file);
-
-                    IInputReader outputWriter;
-                    try
-                    {
-                        outputWriter = FileHandlerFactory.GetInputReader(fileSystem, inputType);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        hasError = true;
-                        Log.LogError("No reader found for file {0}: {1} Stacktrace: {2}", file, ex.Message, ex.StackTrace);
-                        continue;
-                    }
-
-                    JsonElement fileData;
-                    try
-                    {
-                        fileData = outputWriter.ReadInput(file);
-                    }
-                    catch (Exception ex)
-                    {
-                        hasError = true;
-                        Log.LogError("Could not parse {0}: {1}", file, ex.Message);
-                        Log.LogErrorFromException(ex, true, true, file);
-                        continue;
-                    }
-
-                    // Merge the deserialized object into the final result
-                    finalResult = ObjectManager.MergeObjects(finalResult, fileData, file, AddSourceProperty);
-                }
-
-                if (hasError)
-                {
-                    return false;
-                }
+                var finalResult = ObjectManager.MergeFileObjects(InputDirectory, inputType, AddSourceProperty, fileSystem, Log).GetAwaiter().GetResult();
 
                 if (finalResult == null)
                 {
@@ -124,11 +77,7 @@ namespace AggregateConfig
                 }
 
                 var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
-                if (!ObjectManager.InjectAdditionalProperties(ref finalResult, additionalPropertiesDictionary))
-                {
-                    Log.LogError("Additional properties could not be injected since the top-level is not a JSON object.");
-                    return false;
-                }
+                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary).GetAwaiter().GetResult();
 
                 var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);

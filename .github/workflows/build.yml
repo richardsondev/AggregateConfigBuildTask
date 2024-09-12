@@ -55,7 +55,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: NuGetPackage
-        path: src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
+        path: |
+          src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
+          src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.snupkg
 
   integration_tests:
     needs: build

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace AggregateConfig
+namespace AggregateConfigBuildTask
 {
     internal class FileSystem : IFileSystem
     {

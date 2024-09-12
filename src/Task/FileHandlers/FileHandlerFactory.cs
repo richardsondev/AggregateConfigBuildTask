@@ -6,45 +6,45 @@ namespace AggregateConfigBuildTask.FileHandlers
 {
     public static class FileHandlerFactory
     {
-        internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, OutputTypeEnum format)
+        internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, OutputType format)
         {
             switch (format)
             {
-                case OutputTypeEnum.Json:
+                case OutputType.Json:
                     return new JsonFileHandler(fileSystem);
-                case OutputTypeEnum.Yaml:
+                case OutputType.Yaml:
                     return new YamlFileHandler(fileSystem);
-                case OutputTypeEnum.Arm:
+                case OutputType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format");
             }
         }
 
-        internal static IInputReader GetInputReader(IFileSystem fileSystem, InputTypeEnum format)
+        internal static IInputReader GetInputReader(IFileSystem fileSystem, InputType format)
         {
             switch (format)
             {
-                case InputTypeEnum.Yaml:
+                case InputType.Yaml:
                     return new YamlFileHandler(fileSystem);
-                case InputTypeEnum.Json:
+                case InputType.Json:
                     return new JsonFileHandler(fileSystem);
-                case InputTypeEnum.Arm:
+                case InputType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported input format");
             }
         }
 
-        internal static List<string> GetExpectedFileExtensions(InputTypeEnum inputType)
+        internal static List<string> GetExpectedFileExtensions(InputType inputType)
         {
             switch (inputType)
             {
-                case InputTypeEnum.Json:
+                case InputType.Json:
                     return new List<string> { ".json" };
-                case InputTypeEnum.Yaml:
+                case InputType.Yaml:
                     return new List<string> { ".yml", ".yaml" };
-                case InputTypeEnum.Arm:
+                case InputType.Arm:
                     return new List<string> { ".json" };
                 default:
                     throw new ArgumentException("Unsupported input type");

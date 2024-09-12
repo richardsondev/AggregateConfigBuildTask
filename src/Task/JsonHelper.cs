@@ -72,6 +72,7 @@ namespace AggregateConfigBuildTask
         {
             var additionalPropertiesDict = new Dictionary<string, string>();
             const string unicodeEscape = "\u001F";
+            char[] split = new[] { '=' };
 
             if (properties != null)
             {
@@ -79,7 +80,7 @@ namespace AggregateConfigBuildTask
                 {
                     var sanitizedProperty = property.Replace(@"\=", unicodeEscape);
 
-                    var keyValue = sanitizedProperty.Split(new[] { '=' }, 2);
+                    var keyValue = sanitizedProperty.Split(split, 2);
 
                     if (keyValue.Length == 2)
                     {
@@ -104,10 +105,10 @@ namespace AggregateConfigBuildTask
 
             using (var memoryStream = new MemoryStream())
             {
-                await JsonSerializer.SerializeAsync(memoryStream, value);
+                await JsonSerializer.SerializeAsync(memoryStream, value).ConfigureAwait(false);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                using (var jsonDocument = await JsonDocument.ParseAsync(memoryStream))
+                using (var jsonDocument = await JsonDocument.ParseAsync(memoryStream).ConfigureAwait(false))
                 {
                     return jsonDocument.RootElement.Clone();
                 }

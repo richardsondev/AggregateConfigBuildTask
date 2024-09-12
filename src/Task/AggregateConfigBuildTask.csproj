@@ -6,7 +6,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <SourceLinkCreate>true</SourceLinkCreate>
-        <NoWarn>NU5100</NoWarn>
+        <NoWarn>NU5100,CA1031,CA1819</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">

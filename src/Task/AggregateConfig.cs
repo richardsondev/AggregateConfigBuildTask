@@ -26,7 +26,7 @@ namespace AggregateConfigBuildTask
         [Required]
         public string OutputType { get; set; }
 
-        public bool AddSourceProperty { get; set; } = false;
+        public bool AddSourceProperty { get; set; }
 
         public string[] AdditionalProperties { get; set; }
 
@@ -48,18 +48,18 @@ namespace AggregateConfigBuildTask
 
                 OutputFile = Path.GetFullPath(OutputFile);
 
-                if (!Enum.TryParse(OutputType, true, out OutputTypeEnum outputType) ||
-                    !Enum.IsDefined(typeof(OutputTypeEnum), outputType))
+                if (!Enum.TryParse(OutputType, true, out OutputType outputType) ||
+                    !Enum.IsDefined(typeof(OutputType), outputType))
                 {
-                    Log.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputTypeEnum))));
+                    Log.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputType))));
                     return false;
                 }
 
-                InputTypeEnum inputType = InputTypeEnum.Yaml;
+                InputType inputType = Contracts.InputType.Yaml;
                 if (!string.IsNullOrEmpty(InputType) &&
-                    (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(InputTypeEnum), inputType)))
+                    (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(InputType), inputType)))
                 {
-                    Log.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputTypeEnum))));
+                    Log.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputType))));
                     return false;
                 }
 
@@ -103,7 +103,7 @@ namespace AggregateConfigBuildTask
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
                 .InformationalVersion;
 
-            Log.LogMessage($"AggregateConfig Version: {informationalVersion}");
+            Log.LogMessage(MessageImportance.High, $"AggregateConfig Version: {informationalVersion}");
         }
     }
 }

@@ -1,0 +1,10 @@
+<Project>
+   <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Deterministic>true</Deterministic>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisLevel>latest</AnalysisLevel>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+   </PropertyGroup>
+</Project>

@@ -2,3 +2,10 @@
 
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = suggestion
+
+# Organize usings
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# Missing usings should be reported as error (IDE0005)
+dotnet_diagnostic.IDE0005.severity = error

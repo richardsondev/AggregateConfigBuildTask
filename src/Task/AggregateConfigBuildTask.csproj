@@ -68,6 +68,7 @@
             <Link>licenses/LICENSE</Link>
         </None>
         <None Include="../../README.md" Pack="true" PackagePath="/docs/" />
+        <None Include="../../image/icon/icon_128.png" Pack="true" PackagePath="/icon.png" />
     </ItemGroup>
 
 </Project>

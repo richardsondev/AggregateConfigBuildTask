@@ -48,7 +48,7 @@ namespace AggregateConfigBuildTask
 
                 OutputFile = Path.GetFullPath(OutputFile);
 
-                if (!Enum.TryParse(OutputType, out OutputTypeEnum outputType) ||
+                if (!Enum.TryParse(OutputType, true, out OutputTypeEnum outputType) ||
                     !Enum.IsDefined(typeof(OutputTypeEnum), outputType))
                 {
                     Log.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputTypeEnum))));
@@ -57,7 +57,7 @@ namespace AggregateConfigBuildTask
 
                 InputTypeEnum inputType = InputTypeEnum.Yaml;
                 if (!string.IsNullOrEmpty(InputType) &&
-                    (!Enum.TryParse(InputType, out inputType) || !Enum.IsDefined(typeof(InputTypeEnum), inputType)))
+                    (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(InputTypeEnum), inputType)))
                 {
                     Log.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputTypeEnum))));
                     return false;

@@ -7,6 +7,8 @@ namespace AggregateConfigBuildTask.FileHandlers
     {
         readonly IFileSystem fileSystem;
 
+        private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+
         internal JsonFileHandler(IFileSystem fileSystem)
         {
             this.fileSystem = fileSystem;
@@ -24,7 +26,6 @@ namespace AggregateConfigBuildTask.FileHandlers
         /// <inheritdoc/>
         public void WriteOutput(JsonElement? mergedData, string outputPath)
         {
-            var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
             var jsonContent = JsonSerializer.Serialize(mergedData, jsonOptions);
             fileSystem.WriteAllText(outputPath, jsonContent);
         }

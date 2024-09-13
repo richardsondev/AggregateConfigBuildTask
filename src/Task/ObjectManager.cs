@@ -14,7 +14,7 @@ namespace AggregateConfigBuildTask
 {
     internal static class ObjectManager
     {
-        public static async Task<JsonElement?> MergeFileObjects(string fileObjectDirectoryPath, InputTypeEnum inputType, bool addSourceProperty, IFileSystem fileSystem, TaskLoggingHelper log)
+        public static async Task<JsonElement?> MergeFileObjects(string fileObjectDirectoryPath, InputType inputType, bool addSourceProperty, IFileSystem fileSystem, TaskLoggingHelper log)
         {
             var finalResults = new ConcurrentBag<JsonElement>();
             JsonElement? finalResult = null;
@@ -22,7 +22,7 @@ namespace AggregateConfigBuildTask
 
             var expectedExtensions = FileHandlerFactory.GetExpectedFileExtensions(inputType);
             var fileGroups = fileSystem.GetFiles(fileObjectDirectoryPath, "*.*")
-                .Where(file => expectedExtensions.Contains(Path.GetExtension(file).ToLower()))
+                .Where(file => expectedExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
                 .ToList()
                 .Chunk(100);
 
@@ -48,7 +48,7 @@ namespace AggregateConfigBuildTask
                         JsonElement fileData;
                         try
                         {
-                            fileData = await outputWriter.ReadInput(file);
+                            fileData = await outputWriter.ReadInput(file).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -59,9 +59,9 @@ namespace AggregateConfigBuildTask
                         }
 
                         // Merge the deserialized object into the final result
-                        finalResults.Add(await ObjectManager.MergeObjects(intermediateResult, fileData, file, addSourceProperty));
+                        finalResults.Add(await MergeObjects(intermediateResult, fileData, file, addSourceProperty).ConfigureAwait(false));
                     }
-                });
+                }).ConfigureAwait(false);
 
             if (hasError)
             {
@@ -70,7 +70,7 @@ namespace AggregateConfigBuildTask
 
             foreach (var result in finalResults)
             {
-                finalResult = await ObjectManager.MergeObjects(finalResult, result, null, false);
+                finalResult = await MergeObjects(finalResult, result, null, false).ConfigureAwait(false);
             }
 
             return finalResult;
@@ -106,14 +106,14 @@ namespace AggregateConfigBuildTask
                                 nestedDict["source"] = JsonDocument.Parse($"\"{Path.GetFileNameWithoutExtension(source2)}\"").RootElement;
 
                                 // Update the list at the correct index
-                                obj2NestedList[index] = await JsonHelper.ConvertToJsonElement(nestedDict);
+                                obj2NestedList[index] = await JsonHelper.ConvertToJsonElement(nestedDict).ConfigureAwait(false);
                             }
                         }
 
-                        jsonObject[key] = await JsonHelper.ConvertToJsonElement(obj2NestedList);
+                        jsonObject[key] = await JsonHelper.ConvertToJsonElement(obj2NestedList).ConfigureAwait(false);
                     }
                 }
-                obj2 = await JsonHelper.ConvertObjectToJsonElement(jsonObject);
+                obj2 = await JsonHelper.ConvertObjectToJsonElement(jsonObject).ConfigureAwait(false);
             }
 
             return obj2;
@@ -124,11 +124,11 @@ namespace AggregateConfigBuildTask
         /// </summary>
         public static async Task<JsonElement> MergeObjects(JsonElement? obj1, JsonElement? obj2, string source2, bool injectSourceProperty)
         {
-            obj1 = await InjectSourceProperty(obj1, source2, injectSourceProperty);
-            obj2 = await InjectSourceProperty(obj2, source2, injectSourceProperty);
+            obj1 = await InjectSourceProperty(obj1, source2, injectSourceProperty).ConfigureAwait(false);
+            obj2 = await InjectSourceProperty(obj2, source2, injectSourceProperty).ConfigureAwait(false);
 
             if (obj1 == null) return obj2 ?? default;
-            if (obj2 == null) return obj1 ?? default;
+            if (obj2 == null) return obj1.Value;
 
             // Handle merging of objects
             if (obj1.Value.ValueKind == JsonValueKind.Object && obj2.Value.ValueKind == JsonValueKind.Object)
@@ -138,9 +138,9 @@ namespace AggregateConfigBuildTask
 
                 foreach (var key in dict2.Keys)
                 {
-                    if (dict1.ContainsKey(key))
+                    if (dict1.TryGetValue(key, out JsonElement dict1Value))
                     {
-                        dict1[key] = await MergeObjects(dict1[key], dict2[key], source2, injectSourceProperty);
+                        dict1[key] = await MergeObjects(dict1Value, dict2[key], source2, injectSourceProperty).ConfigureAwait(false);
                     }
                     else
                     {
@@ -148,7 +148,7 @@ namespace AggregateConfigBuildTask
                     }
                 }
 
-                return await JsonHelper.ConvertToJsonElement(dict1);
+                return await JsonHelper.ConvertToJsonElement(dict1).ConfigureAwait(false);
             }
             // Handle merging of arrays
             else if (obj1.Value.ValueKind == JsonValueKind.Array && obj2.Value.ValueKind == JsonValueKind.Array)
@@ -161,7 +161,7 @@ namespace AggregateConfigBuildTask
                     list1.Add(item);
                 }
 
-                return await JsonHelper.ConvertToJsonElement(list1);
+                return await JsonHelper.ConvertToJsonElement(list1).ConfigureAwait(false);
             }
             // For scalar values, obj2 overwrites obj1
             else
@@ -188,10 +188,10 @@ namespace AggregateConfigBuildTask
                     // Add the properties from additionalPropertiesDictionary, converting values to JsonElement
                     foreach (var property in additionalPropertiesDictionary)
                     {
-                        jsonDictionary[property.Key] = await JsonHelper.ConvertObjectToJsonElement(property.Value);
+                        jsonDictionary[property.Key] = await JsonHelper.ConvertObjectToJsonElement(property.Value).ConfigureAwait(false);
                     }
 
-                    return await JsonHelper.ConvertToJsonElement(jsonDictionary);
+                    return await JsonHelper.ConvertToJsonElement(jsonDictionary).ConfigureAwait(false);
                 }
                 else
                 {

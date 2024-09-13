@@ -2,7 +2,7 @@
 
 namespace AggregateConfigBuildTask
 {
-    internal class FileSystem : IFileSystem
+    internal sealed class FileSystem : IFileSystem
     {
         /// <inheritdoc/>
         public string[] GetFiles(string path, string searchPattern)

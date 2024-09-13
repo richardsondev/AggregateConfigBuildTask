@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -6,12 +7,11 @@ using System.Text.RegularExpressions;
 
 namespace AggregateConfigBuildTask.Tests.Unit
 {
-    internal class VirtualFileSystem(bool isWindowsMode = true) : IFileSystem
+    internal sealed class VirtualFileSystem(bool isWindowsMode = true) : IFileSystem
     {
         private readonly bool isWindowsMode = isWindowsMode;
-        private readonly Dictionary<string, string> fileSystem = new(
-                isWindowsMode ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
-            );
+        private ConcurrentDictionary<string, string> fileSystem = new(
+            isWindowsMode ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
         private RegexOptions RegexOptions => isWindowsMode ? RegexOptions.IgnoreCase : RegexOptions.None;
         private StringComparison StringComparison => isWindowsMode ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
@@ -133,6 +133,14 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         /// <summary>
+        /// Delete all files on the virtual file system.
+        /// </summary>
+        public void FormatSystem()
+        {
+            fileSystem = new ConcurrentDictionary<string, string>();
+        }
+
+        /// <summary>
         /// Ensures that the provided directory path ends with a directory separator character.
         /// </summary>
         /// <param name="directoryPath">The directory path to normalize.</param>
@@ -146,7 +154,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             char directorySeparator = isWindowsMode ? '\\' : '/';
 
             // Ensure the directory path ends with the correct directory separator
-            if (!directoryPath.EndsWith(directorySeparator.ToString()))
+            if (!directoryPath.EndsWith(directorySeparator.ToString(), StringComparison.Ordinal))
             {
                 directoryPath += directorySeparator;
             }
@@ -163,7 +171,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string escapedPattern = Regex.Escape(searchPattern);
 
             // Replace escaped * and ? with their regex equivalents
-            escapedPattern = escapedPattern.Replace("\\*", ".*").Replace("\\?", ".");
+            escapedPattern = escapedPattern.Replace("\\*", ".*", StringComparison.Ordinal).Replace("\\?", ".", StringComparison.Ordinal);
 
             // Add start and end anchors to ensure full-string match
             return "^" + escapedPattern + "$";
@@ -185,7 +193,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string normalizedPath = path.Replace(alternativeSeparator, directorySeparator);
 
             // Trim any redundant trailing slashes except for root directory ("/" or "C:\\")
-            if (normalizedPath.Length > 1 && normalizedPath.EndsWith(directorySeparator.ToString()))
+            if (normalizedPath.Length > 1 && normalizedPath.EndsWith(directorySeparator.ToString(), StringComparison.Ordinal))
             {
                 normalizedPath = normalizedPath.TrimEnd(directorySeparator);
             }

@@ -1,4 +1,4 @@
-﻿using AggregateConfigBuildTask.Contracts;
+using AggregateConfigBuildTask.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -14,6 +14,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
     {
         private string testPath;
         internal IFileSystem mockFileSystem;
+        private StringComparison comparison = StringComparison.OrdinalIgnoreCase;
 
         public void TestInitialize(bool isWindowsMode, string testPath)
         {
@@ -40,7 +41,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -75,7 +76,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
+                OutputType = OutputType.Arm.ToString(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -90,8 +91,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
             Assert.IsTrue(armTemplate.ContainsKey("parameters"));
 
             JObject parameters = (JObject)armTemplate["parameters"];
-            Assert.IsNotNull(parameters.GetValue("options"));
-            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
+            Assert.IsNotNull(parameters.GetValue("options", comparison));
+            Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
         }
 
         [TestMethod]
@@ -109,7 +110,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -153,7 +154,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -185,7 +186,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -220,7 +221,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
+                OutputType = OutputType.Arm.ToString(),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -238,9 +239,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
-            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
-            Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
-            Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
+            Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
+            Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
+            Assert.AreEqual("Prod", parameters.GetValue("Environment", comparison)["value"].Value<string>());
         }
 
         [TestMethod]
@@ -252,7 +253,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -279,7 +280,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -305,7 +306,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
+                OutputType = OutputType.Arm.ToString(),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -317,9 +318,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
-            Assert.AreEqual("array", parameters.GetValue("options")["type"].ToString());
-            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+            Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
+            Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -340,10 +341,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             var task = new AggregateConfig(mockFileSystem)
             {
-                InputType = InputTypeEnum.Json.ToString(),
+                InputType = InputType.Json.ToString(),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
+                OutputType = OutputType.Arm.ToString(),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -361,12 +362,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
-            Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
-            Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
-            Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
-            Assert.AreEqual("file1", parameters.GetValue("options")["value"].First()["source"].Value<string>());
-            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+            Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
+            Assert.AreEqual("Prod", parameters.GetValue("Environment", comparison)["value"].Value<string>());
+            Assert.AreEqual("String", parameters.GetValue("options", comparison)["value"].First()["source"].Type.ToString());
+            Assert.AreEqual("file1", parameters.GetValue("options", comparison)["value"].First()["source"].Value<string>());
+            Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -392,10 +393,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             var task = new AggregateConfig(mockFileSystem)
             {
-                InputType = InputTypeEnum.Arm.ToString(),
+                InputType = InputType.Arm.ToString(),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputTypeEnum.Arm.ToString(),
+                OutputType = OutputType.Arm.ToString(),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -413,12 +414,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string output = mockFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
-            Assert.AreEqual("TestRG", parameters.GetValue("Group")["value"].Value<string>());
-            Assert.AreEqual("Prod", parameters.GetValue("Environment")["value"].Value<string>());
-            Assert.AreEqual("String", parameters.GetValue("options")["value"].First()["source"].Type.ToString());
-            Assert.AreEqual("file1.parameters", parameters.GetValue("options")["value"].First()["source"].Value<string>());
-            Assert.AreEqual("Boolean", parameters.GetValue("options")["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options")["value"].First()["isEnabled"].Value<bool>());
+            Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
+            Assert.AreEqual("Prod", parameters.GetValue("Environment", comparison)["value"].Value<string>());
+            Assert.AreEqual("String", parameters.GetValue("options", comparison)["value"].First()["source"].Type.ToString());
+            Assert.AreEqual("file1.parameters", parameters.GetValue("options", comparison)["value"].First()["source"].Value<string>());
+            Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
+            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -449,7 +450,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputTypeEnum.Json.ToString(),
+                OutputType = OutputType.Json.ToString(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };

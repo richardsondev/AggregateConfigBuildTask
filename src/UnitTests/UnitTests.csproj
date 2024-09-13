@@ -5,10 +5,9 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>false</ImplicitUsings>
         <Nullable>disable</Nullable>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <NoWarn>CS1591</NoWarn>
+        <NoWarn>CS1591,CA1707,CA5394,CA1305</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

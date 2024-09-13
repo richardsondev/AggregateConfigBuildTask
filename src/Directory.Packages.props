@@ -25,6 +25,8 @@
   </ItemGroup>
   <!-- Global packages -->
   <ItemGroup>
+    <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
     <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.6" />
+    <GlobalPackageReference Include="Roslynator.Analyzers" Version="4.12.4" />
   </ItemGroup>
 </Project>

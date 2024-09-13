@@ -8,7 +8,9 @@ namespace AggregateConfigBuildTask.FileHandlers
 {
     public class ArmParametersFileHandler : IOutputWriter, IInputReader
     {
-        readonly IFileSystem fileSystem;
+        private readonly IFileSystem fileSystem;
+
+        private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 
         internal ArmParametersFileHandler(IFileSystem fileSystem)
         {
@@ -16,11 +18,11 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public ValueTask<JsonElement> ReadInput(string inputPath)
+        public async ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (var stream = fileSystem.OpenRead(inputPath))
             {
-                using (var jsonDoc = JsonDocument.Parse(stream))
+                using (var jsonDoc = await JsonDocument.ParseAsync(stream).ConfigureAwait(false))
                 {
                     if (jsonDoc.RootElement.TryGetProperty("parameters", out JsonElement parameters))
                     {
@@ -41,10 +43,10 @@ namespace AggregateConfigBuildTask.FileHandlers
                         }
 
                         var modifiedJson = modifiedParameters.ToJsonString();
-                        return new ValueTask<JsonElement>(Task.FromResult(JsonSerializer.Deserialize<JsonElement>(modifiedJson)));
+                        return JsonSerializer.Deserialize<JsonElement>(modifiedJson);
                     }
 
-                    return new ValueTask<JsonElement>(Task.FromResult(jsonDoc.RootElement.Clone()));
+                    return jsonDoc.RootElement.Clone();
                 }
             }
         }
@@ -74,8 +76,6 @@ namespace AggregateConfigBuildTask.FileHandlers
                     ["contentVersion"] = "1.0.0.0",
                     ["parameters"] = parameters
                 };
-
-                var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
                 var jsonContent = JsonSerializer.Serialize(armTemplate, jsonOptions);
                 fileSystem.WriteAllText(outputPath, jsonContent);
             }
@@ -90,7 +90,7 @@ namespace AggregateConfigBuildTask.FileHandlers
         /// </summary>
         /// <param name="value">The JsonElement value to evaluate.</param>
         /// <returns>A string representing the ARM template parameter type.</returns>
-        private string GetParameterType(JsonElement value)
+        private static string GetParameterType(JsonElement value)
         {
             switch (value.ValueKind)
             {
@@ -115,7 +115,7 @@ namespace AggregateConfigBuildTask.FileHandlers
             }
         }
 
-        private JsonNode ConvertElementToNode(JsonElement element)
+        private static JsonNode ConvertElementToNode(JsonElement element)
         {
             // Use GetRawText to get the JSON string representation of the JsonElement
             var jsonString = element.GetRawText();

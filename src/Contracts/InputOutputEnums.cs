@@ -1,20 +1,20 @@
 ﻿namespace AggregateConfigBuildTask.Contracts
 {
-    public enum OutputTypeEnum
+    public enum OutputType
     {
-        Json,
-        Arm,
+        Json = 0,
+        Arm = 1,
         ArmParameter = Arm,
-        Yml,
+        Yml = 2,
         Yaml = Yml
     }
 
-    public enum InputTypeEnum
+    public enum InputType
     {
-        Json,
-        Arm,
+        Json = 0,
+        Arm = 1,
         ArmParameter = Arm,
-        Yml,
+        Yml = 2,
         Yaml = Yml
     }
 }

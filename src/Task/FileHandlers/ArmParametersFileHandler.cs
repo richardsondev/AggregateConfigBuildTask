@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask.FileHandlers
 {
-    public class ArmParametersFileHandler : IOutputWriter, IInputReader
+    public class ArmParametersFileHandler : IFileHandler
     {
         private readonly IFileSystem fileSystem;
 

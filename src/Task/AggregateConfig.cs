@@ -98,7 +98,7 @@ namespace AggregateConfigBuildTask
                 var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
                 finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, logger).GetAwaiter().GetResult();
 
-                var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
+                var writer = FileHandlerFactory.GetFileHandlerForType(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);
                 logger.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
 

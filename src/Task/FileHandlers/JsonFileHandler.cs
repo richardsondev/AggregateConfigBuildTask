@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask.FileHandlers
 {
-    public class JsonFileHandler : IOutputWriter, IInputReader
+    public class JsonFileHandler : IFileHandler
     {
         readonly IFileSystem fileSystem;
 

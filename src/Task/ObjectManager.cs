@@ -35,10 +35,10 @@ namespace AggregateConfigBuildTask
                     {
                         log.LogMessage(MessageImportance.High, "- Found file {0}", file);
 
-                        IInputReader outputWriter;
+                        IFileHandler outputWriter;
                         try
                         {
-                            outputWriter = FileHandlerFactory.GetInputReader(fileSystem, inputType);
+                            outputWriter = FileHandlerFactory.GetFileHandlerForType(fileSystem, inputType);
                         }
                         catch (ArgumentException ex)
                         {

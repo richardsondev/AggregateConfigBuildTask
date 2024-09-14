@@ -7,7 +7,7 @@ using YamlDotNet.System.Text.Json;
 
 namespace AggregateConfigBuildTask.FileHandlers
 {
-    public class YamlFileHandler : IOutputWriter, IInputReader
+    public class YamlFileHandler : IFileHandler
     {
         readonly IFileSystem fileSystem;
 

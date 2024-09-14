@@ -5,7 +5,7 @@ namespace AggregateConfigBuildTask.FileHandlers
 {
     public static class FileHandlerFactory
     {
-        internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, FileType format)
+        internal static IFileHandler GetFileHandlerForType(IFileSystem fileSystem, FileType format)
         {
             switch (format)
             {
@@ -17,21 +17,6 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format");
-            }
-        }
-
-        internal static IInputReader GetInputReader(IFileSystem fileSystem, FileType format)
-        {
-            switch (format)
-            {
-                case FileType.Yaml:
-                    return new YamlFileHandler(fileSystem);
-                case FileType.Json:
-                    return new JsonFileHandler(fileSystem);
-                case FileType.Arm:
-                    return new ArmParametersFileHandler(fileSystem);
-                default:
-                    throw new ArgumentException("Unsupported input format");
             }
         }
 

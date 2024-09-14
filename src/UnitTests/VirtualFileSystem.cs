@@ -10,7 +10,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
     internal sealed class VirtualFileSystem(bool isWindowsMode = true) : IFileSystem
     {
         private readonly bool isWindowsMode = isWindowsMode;
-        private ConcurrentDictionary<string, string> fileSystem = new(
+        private readonly ConcurrentDictionary<string, string> fileSystem = new(
             isWindowsMode ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
         private RegexOptions RegexOptions => isWindowsMode ? RegexOptions.IgnoreCase : RegexOptions.None;
@@ -130,14 +130,6 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             var byteArray = Encoding.UTF8.GetBytes(ReadAllText(inputPath));
             return new MemoryStream(byteArray);
-        }
-
-        /// <summary>
-        /// Delete all files on the virtual file system.
-        /// </summary>
-        public void FormatSystem()
-        {
-            fileSystem = new ConcurrentDictionary<string, string>();
         }
 
         /// <summary>

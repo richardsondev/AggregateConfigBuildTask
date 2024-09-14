@@ -478,65 +478,54 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         [TestMethod]
+        [DataRow("arm", new[] { "json", "yml", "arm" }, DisplayName = "ARM -> JSON -> YAML -> ARM")]
+        [DataRow("arm", new[] { "yml", "json", "arm" }, DisplayName = "ARM -> YAML -> JSON -> ARM")]
+        [DataRow("json", new[] { "arm", "yml", "json" }, DisplayName = "JSON -> ARM -> YAML -> JSON")]
+        [DataRow("json", new[] { "yml", "arm", "json" }, DisplayName = "JSON -> YAML -> ARM -> JSON")]
+        [DataRow("yml", new[] { "arm", "json", "yml" }, DisplayName = "YAML -> ARM -> JSON -> YAML")]
+        [DataRow("yml", new[] { "json", "arm", "yml" }, DisplayName = "YAML -> JSON -> ARM -> YAML")]
         [Description("Test that files are correctly translated between ARM, JSON, and YAML.")]
-        public void ShouldTranslateBetweenFormatsAndValidateNoDataLoss()
+        public void ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps)
         {
-            // Test matrix for all combinations
-            var testCases = new[]
+            Assert.IsTrue(steps?.Length > 0);
+
+            // Arrange: Prepare paths and sample data based on the input type.
+            var inputDir = $"{testPath}\\input";
+            virtualFileSystem.CreateDirectory(inputDir);
+
+            // Write the initial input file
+            var inputFilePath = $"{inputDir}\\input.{(inputType == "arm" ? "json" : inputType)}";
+            virtualFileSystem.WriteAllText(inputFilePath, GetSampleDataForType(inputType));
+
+            string previousInputPath = inputFilePath;
+            string previousOutputType = inputType;
+
+            // Execute the translation steps dynamically
+            for (int i = 0; i < steps.Length; i++)
             {
-                new { InputType = "arm", Step1OutputType = "json", Step2OutputType = "yml" },
-                new { InputType = "arm", Step1OutputType = "yml", Step2OutputType = "json" },
-                new { InputType = "json", Step1OutputType = "arm", Step2OutputType = "yml" },
-                new { InputType = "json", Step1OutputType = "yml", Step2OutputType = "arm" },
-                new { InputType = "yml", Step1OutputType = "arm", Step2OutputType = "json" },
-                new { InputType = "yml", Step1OutputType = "json", Step2OutputType = "arm" }
-            };
+                var outputType = steps[i];
+                var stepDir = $"{testPath}\\step{i + 1}";
+                var stepOutputPath = $"{stepDir}\\output.{(outputType == "arm" ? "json" : outputType)}";
 
-            Assert.IsTrue(testCases.Length > 0);
+                virtualFileSystem.CreateDirectory(stepDir);
 
-            foreach (var testCase in testCases)
-            {
-                // Arrange: Prepare paths and sample data based on the input type.
-                var paths = PrepareFilePaths(testCase.InputType, testCase.Step1OutputType, testCase.Step2OutputType);
+                // Execute translation for this step
+                ExecuteTranslationTask(previousOutputType, outputType, previousInputPath, stepOutputPath);
 
-                virtualFileSystem.CreateDirectory(paths.inputDir);
-                virtualFileSystem.CreateDirectory(paths.step1Dir);
-                virtualFileSystem.CreateDirectory(paths.step2Dir);
-                virtualFileSystem.CreateDirectory(paths.finalDir);
-
-                virtualFileSystem.WriteAllText(paths.inputFilePath, GetSampleDataForType(testCase.InputType));
-
-                // Step 1: Convert Input -> Step 1 Output
-                ExecuteTranslationTask(testCase.InputType, testCase.Step1OutputType, paths.inputDir, paths.step1OutputPath);
-
-                // Step 2: Convert Step 1 Output -> Step 2 Output
-                ExecuteTranslationTask(testCase.Step1OutputType, testCase.Step2OutputType, paths.step1Dir, paths.step2OutputPath);
-
-                // Final Step: Convert Step 2 Output -> Original Input Type
-                ExecuteTranslationTask(testCase.Step2OutputType, testCase.InputType, paths.step2Dir, paths.finalOutputPath);
-
-                // Assert: Compare final output with original input to check no data loss
-                AssertNoDataLoss(paths.inputFilePath, paths.finalOutputPath, testCase.InputType);
-
-                // Clear the virtual file system for the next run
-                ((VirtualFileSystem)virtualFileSystem).FormatSystem();
+                // Update paths for the next iteration
+                previousInputPath = stepOutputPath;
+                previousOutputType = outputType;
             }
-        }
 
-        private (string inputDir, string step1Dir, string step2Dir, string finalDir, string inputFilePath, string step1OutputPath, string step2OutputPath, string finalOutputPath)
-            PrepareFilePaths(string inputType, string step1OutputType, string step2OutputType)
-        {
-            string inputDir = $"{testPath}\\input";
-            string step1Dir = $"{testPath}\\step1";
-            string step2Dir = $"{testPath}\\step2";
-            string finalDir = $"{testPath}\\final";
+            // Final step: Convert the final output back to the original input type
+            var finalDir = $"{testPath}\\final";
+            var finalOutputPath = $"{finalDir}\\final_output.{(inputType == "arm" ? "json" : inputType)}";
+            virtualFileSystem.CreateDirectory(finalDir);
 
-            string inputFilePath = $"{inputDir}\\input.{(inputType == "arm" ? "json" : inputType)}";
-            string step1OutputPath = $"{step1Dir}\\step1_output.{(step1OutputType == "arm" ? "json" : step1OutputType)}";
-            string step2OutputPath = $"{step2Dir}\\step2_output.{(step2OutputType == "arm" ? "json" : step2OutputType)}";
-            string finalOutputPath = $"{finalDir}\\final_output.{(inputType == "arm" ? "json" : inputType)}";
+            ExecuteTranslationTask(previousOutputType, inputType, previousInputPath, finalOutputPath);
 
-            return (inputDir, step1Dir, step2Dir, finalDir, inputFilePath, step1OutputPath, step2OutputPath, finalOutputPath);
+            // Assert: Compare final output with original input to check no data loss
+            AssertNoDataLoss(inputFilePath, finalOutputPath, inputType);
         }
 
         private void ExecuteTranslationTask(string inputType, string outputType, string inputFilePath, string outputFilePath)

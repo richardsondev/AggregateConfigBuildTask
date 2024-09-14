@@ -1,7 +1,6 @@
 ﻿using AggregateConfigBuildTask.Contracts;
 using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +13,11 @@ namespace AggregateConfigBuildTask
 {
     internal static class ObjectManager
     {
-        public static async Task<JsonElement?> MergeFileObjects(string fileObjectDirectoryPath, InputType inputType, bool addSourceProperty, IFileSystem fileSystem, TaskLoggingHelper log)
+        public static async Task<JsonElement?> MergeFileObjects(string fileObjectDirectoryPath,
+            InputType inputType,
+            bool addSourceProperty,
+            IFileSystem fileSystem,
+            ITaskLogger log)
         {
             var finalResults = new ConcurrentBag<JsonElement>();
             JsonElement? finalResult = null;
@@ -177,7 +180,7 @@ namespace AggregateConfigBuildTask
         /// <param name="additionalPropertiesDictionary">A dictionary of additional properties to inject.</param>
         /// <param name="log">Logger reference.</param>
         /// <returns>True if the properties were successfully injected, false otherwise.</returns>
-        public static async Task<JsonElement?> InjectAdditionalProperties(JsonElement? finalResult, Dictionary<string, string> additionalPropertiesDictionary, TaskLoggingHelper log)
+        public static async Task<JsonElement?> InjectAdditionalProperties(JsonElement? finalResult, Dictionary<string, string> additionalPropertiesDictionary, ITaskLogger log)
         {
             if (additionalPropertiesDictionary?.Count > 0)
             {

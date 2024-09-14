@@ -14,7 +14,9 @@ namespace AggregateConfigBuildTask
     public class AggregateConfig : Task
     {
         private readonly IFileSystem fileSystem;
+        private ITaskLogger logger;
 
+        /* Start incoming properties */
         [Required]
         public string InputDirectory { get; set; }
 
@@ -30,14 +32,29 @@ namespace AggregateConfigBuildTask
 
         public string[] AdditionalProperties { get; set; }
 
+        public bool IsQuietMode
+        {
+            get
+            {
+                return logger is QuietTaskLogger;
+            }
+            set
+            {
+                logger = value && !(logger is QuietTaskLogger) ? new QuietTaskLogger(Log) : logger;
+            }
+        }
+        /* End incoming properties */
+
         public AggregateConfig()
         {
             this.fileSystem = new FileSystem();
+            this.logger = new TaskLogger(Log);
         }
 
-        internal AggregateConfig(IFileSystem fileSystem)
+        internal AggregateConfig(IFileSystem fileSystem, ITaskLogger logger)
         {
             this.fileSystem = fileSystem;
+            this.logger = logger;
         }
 
         public override bool Execute()
@@ -51,7 +68,7 @@ namespace AggregateConfigBuildTask
                 if (!Enum.TryParse(OutputType, true, out OutputType outputType) ||
                     !Enum.IsDefined(typeof(OutputType), outputType))
                 {
-                    Log.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputType))));
+                    logger.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputType))));
                     return false;
                 }
 
@@ -59,11 +76,11 @@ namespace AggregateConfigBuildTask
                 if (!string.IsNullOrEmpty(InputType) &&
                     (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(InputType), inputType)))
                 {
-                    Log.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputType))));
+                    logger.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputType))));
                     return false;
                 }
 
-                Log.LogMessage(MessageImportance.High, "Aggregating {0} to {1} in folder {2}", inputType, outputType, InputDirectory);
+                logger.LogMessage(MessageImportance.High, "Aggregating {0} to {1} in folder {2}", inputType, outputType, InputDirectory);
 
                 string directoryPath = Path.GetDirectoryName(OutputFile);
                 if (!fileSystem.DirectoryExists(directoryPath))
@@ -71,27 +88,27 @@ namespace AggregateConfigBuildTask
                     fileSystem.CreateDirectory(directoryPath);
                 }
 
-                var finalResult = ObjectManager.MergeFileObjects(InputDirectory, inputType, AddSourceProperty, fileSystem, Log).GetAwaiter().GetResult();
+                var finalResult = ObjectManager.MergeFileObjects(InputDirectory, inputType, AddSourceProperty, fileSystem, logger).GetAwaiter().GetResult();
 
                 if (finalResult == null)
                 {
-                    Log.LogError("No input was found! Check the input directory.");
+                    logger.LogError("No input was found! Check the input directory.");
                     return false;
                 }
 
                 var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
-                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, Log).GetAwaiter().GetResult();
+                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, logger).GetAwaiter().GetResult();
 
                 var writer = FileHandlerFactory.GetOutputWriter(fileSystem, outputType);
                 writer.WriteOutput(finalResult, OutputFile);
-                Log.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
+                logger.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Log.LogError("An unknown exception occurred: {0}", ex.Message);
-                Log.LogErrorFromException(ex, true, true, null);
+                logger.LogError("An unknown exception occurred: {0}", ex.Message);
+                logger.LogErrorFromException(ex, true, true, null);
                 return false;
             }
         }
@@ -103,7 +120,7 @@ namespace AggregateConfigBuildTask
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
                 .InformationalVersion;
 
-            Log.LogMessage(MessageImportance.High, $"AggregateConfig Version: {informationalVersion}");
+            logger.LogMessage(MessageImportance.Normal, $"AggregateConfig Version: {informationalVersion}");
         }
     }
 }

@@ -16,6 +16,7 @@ namespace AggregateConfigBuildTask
         private readonly IFileSystem fileSystem;
         private ITaskLogger logger;
 
+        /* Start incoming properties */
         [Required]
         public string InputDirectory { get; set; }
 
@@ -42,6 +43,7 @@ namespace AggregateConfigBuildTask
                 logger = value ? new QuietTaskLogger(Log) : logger;
             }
         }
+        /* End incoming properties */
 
         public AggregateConfig()
         {

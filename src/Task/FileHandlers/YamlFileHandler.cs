@@ -17,18 +17,18 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public ValueTask<JsonElement> ReadInput(string inputPath)
+        public async ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (TextReader reader = fileSystem.OpenText(inputPath))
             {
-                return new ValueTask<JsonElement>(
+                return await new ValueTask<JsonElement>(
                     Task.FromResult(
                         new DeserializerBuilder()
                             .WithNamingConvention(CamelCaseNamingConvention.Instance)
                             .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
                             .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
                             .Build()
-                            .Deserialize<JsonElement>(reader)));
+                            .Deserialize<JsonElement>(reader))).ConfigureAwait(false);
             }
         }
 

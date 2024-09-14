@@ -1,4 +1,3 @@
-﻿using AggregateConfigBuildTask.Contracts;
 using System;
 using System.Collections.Generic;
 
@@ -6,45 +5,45 @@ namespace AggregateConfigBuildTask.FileHandlers
 {
     public static class FileHandlerFactory
     {
-        internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, OutputType format)
+        internal static IOutputWriter GetOutputWriter(IFileSystem fileSystem, FileType format)
         {
             switch (format)
             {
-                case OutputType.Json:
+                case FileType.Json:
                     return new JsonFileHandler(fileSystem);
-                case OutputType.Yaml:
+                case FileType.Yaml:
                     return new YamlFileHandler(fileSystem);
-                case OutputType.Arm:
+                case FileType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format");
             }
         }
 
-        internal static IInputReader GetInputReader(IFileSystem fileSystem, InputType format)
+        internal static IInputReader GetInputReader(IFileSystem fileSystem, FileType format)
         {
             switch (format)
             {
-                case InputType.Yaml:
+                case FileType.Yaml:
                     return new YamlFileHandler(fileSystem);
-                case InputType.Json:
+                case FileType.Json:
                     return new JsonFileHandler(fileSystem);
-                case InputType.Arm:
+                case FileType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported input format");
             }
         }
 
-        internal static List<string> GetExpectedFileExtensions(InputType inputType)
+        internal static List<string> GetExpectedFileExtensions(FileType inputType)
         {
             switch (inputType)
             {
-                case InputType.Json:
+                case FileType.Json:
                     return new List<string> { ".json" };
-                case InputType.Yaml:
+                case FileType.Yaml:
                     return new List<string> { ".yml", ".yaml" };
-                case InputType.Arm:
+                case FileType.Arm:
                     return new List<string> { ".json" };
                 default:
                     throw new ArgumentException("Unsupported input type");

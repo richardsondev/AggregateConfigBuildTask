@@ -108,12 +108,7 @@ namespace AggregateConfigBuildTask
         /// <param name="task">The task that will be used for logging.</param>
         public TaskLogger(TaskLoggingHelper task)
         {
-            if (task == null)
-            {
-                throw new ArgumentNullException(nameof(task));
-            }
-
-            Log = task;
+            Log = task ?? throw new ArgumentNullException(nameof(task));
         }
 
         /// <inheritdoc />
@@ -211,12 +206,7 @@ namespace AggregateConfigBuildTask
         /// <param name="task">The task that will be used for logging.</param>
         public QuietTaskLogger(TaskLoggingHelper task)
         {
-            if (task == null)
-            {
-                throw new ArgumentNullException(nameof(task));
-            }
-
-            Log = task;
+            Log = task ?? throw new ArgumentNullException(nameof(task));
         }
 
         /// <inheritdoc />

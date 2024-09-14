@@ -1,5 +1,4 @@
-﻿using AggregateConfigBuildTask.Contracts;
-using AggregateConfigBuildTask.FileHandlers;
+﻿using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
 using System;
 using System.IO;
@@ -65,18 +64,18 @@ namespace AggregateConfigBuildTask
 
                 OutputFile = Path.GetFullPath(OutputFile);
 
-                if (!Enum.TryParse(OutputType, true, out OutputType outputType) ||
-                    !Enum.IsDefined(typeof(OutputType), outputType))
+                if (!Enum.TryParse(OutputType, true, out FileType outputType) ||
+                    !Enum.IsDefined(typeof(FileType), outputType))
                 {
-                    logger.LogError("Invalid OutputType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(OutputType))));
+                    logger.LogError("Invalid FileType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
                     return false;
                 }
 
-                InputType inputType = Contracts.InputType.Yaml;
+                FileType inputType = FileType.Yaml;
                 if (!string.IsNullOrEmpty(InputType) &&
-                    (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(InputType), inputType)))
+                    (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(FileType), inputType)))
                 {
-                    logger.LogError("Invalid InputType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(InputType))));
+                    logger.LogError("Invalid FileType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
                     return false;
                 }
 

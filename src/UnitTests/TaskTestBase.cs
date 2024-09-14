@@ -1,4 +1,3 @@
-﻿using AggregateConfigBuildTask.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -13,7 +12,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
     public class TaskTestBase
     {
         private string testPath;
-        private StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+        private readonly StringComparison comparison = StringComparison.OrdinalIgnoreCase;
 
         private Mock<ITaskLogger> mockLogger;
         internal IFileSystem virtualFileSystem;
@@ -44,7 +43,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -79,7 +78,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -113,7 +112,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -157,7 +156,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -189,7 +188,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -224,7 +223,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -256,7 +255,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -283,7 +282,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -309,7 +308,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -331,23 +330,24 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInJsonInput()
         {
             // Arrange: Prepare sample JSON data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", """
     {
-        ""options"": [
+        "options": [
             {
-                ""name"": ""Option 1"",
-                ""description"": ""First option"",
-                ""isEnabled"": true
+                "name": "Option 1",
+                "description": "First option",
+                "isEnabled": true
             }
         ]
-    }");
+    }
+""");
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
-                InputType = InputType.Json.ToString(),
+                InputType = nameof(FileType.Json),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -396,10 +396,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
-                InputType = InputType.Arm.ToString(),
+                InputType = nameof(FileType.Arm),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -453,7 +453,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };

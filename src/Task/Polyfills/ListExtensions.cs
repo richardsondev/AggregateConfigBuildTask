@@ -26,9 +26,14 @@ namespace AggregateConfigBuildTask
                 throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than 0.");
             }
 
-            for (int i = 0; i < source.Count; i += chunkSize)
+            return FetchChunks();
+
+            IEnumerable<IEnumerable<string>> FetchChunks()
             {
-                yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
+                for (int i = 0; i < source.Count; i += chunkSize)
+                {
+                    yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
+                }
             }
         }
 

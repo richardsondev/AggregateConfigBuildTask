@@ -1,5 +1,4 @@
-﻿using AggregateConfigBuildTask.Contracts;
-using AggregateConfigBuildTask.FileHandlers;
+﻿using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
 using System;
 using System.Collections.Concurrent;
@@ -14,7 +13,7 @@ namespace AggregateConfigBuildTask
     internal static class ObjectManager
     {
         public static async Task<JsonElement?> MergeFileObjects(string fileObjectDirectoryPath,
-            InputType inputType,
+            FileType inputType,
             bool addSourceProperty,
             IFileSystem fileSystem,
             ITaskLogger log)
@@ -157,12 +156,7 @@ namespace AggregateConfigBuildTask
             else if (obj1.Value.ValueKind == JsonValueKind.Array && obj2.Value.ValueKind == JsonValueKind.Array)
             {
                 var list1 = obj1.Value.EnumerateArray().ToList();
-                var list2 = obj2.Value.EnumerateArray().ToList();
-
-                foreach (var item in list2)
-                {
-                    list1.Add(item);
-                }
+                list1.AddRange(obj2.Value.EnumerateArray().ToList());
 
                 return await JsonHelper.ConvertToJsonElement(list1).ConfigureAwait(false);
             }

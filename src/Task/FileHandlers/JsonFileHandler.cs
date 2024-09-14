@@ -15,11 +15,11 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public ValueTask<JsonElement> ReadInput(string inputPath)
+        public async ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (var json = fileSystem.OpenRead(inputPath))
             {
-                return JsonSerializer.DeserializeAsync<JsonElement>(json);
+                return await JsonSerializer.DeserializeAsync<JsonElement>(json).ConfigureAwait(false);
             }
         }
 

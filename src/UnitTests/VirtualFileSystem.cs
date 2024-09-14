@@ -74,6 +74,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 throw new IOException($"Directory not found '{directoryPath}'.");
             }
 
+            // As a part of the testing, we want to ensure we only write once to each file.
+            if (FileExists(path))
+            {
+                throw new IOException($"Tried to write to existing file '{path}'!");
+            }
+
             fileSystem[path] = text;
         }
 

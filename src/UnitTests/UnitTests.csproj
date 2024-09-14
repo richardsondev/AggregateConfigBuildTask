@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <AssemblyName>AggregateConfig.Tests.Unit</AssemblyName>
@@ -22,7 +22,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Task\AggregateConfigBuildTask.csproj" />
-        <ProjectReference Include="..\Contracts\Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>

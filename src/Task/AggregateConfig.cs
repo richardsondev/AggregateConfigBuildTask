@@ -14,7 +14,7 @@ namespace AggregateConfigBuildTask
     public class AggregateConfig : Task
     {
         private readonly IFileSystem fileSystem;
-        private readonly ITaskLogger logger;
+        private ITaskLogger logger;
 
         [Required]
         public string InputDirectory { get; set; }
@@ -31,12 +31,22 @@ namespace AggregateConfigBuildTask
 
         public string[] AdditionalProperties { get; set; }
 
-        public bool IsQuietMode { get; set; }
+        public bool IsQuietMode
+        {
+            get
+            {
+                return logger is QuietTaskLogger;
+            }
+            set
+            {
+                logger = value ? new QuietTaskLogger(Log) : logger;
+            }
+        }
 
         public AggregateConfig()
         {
             this.fileSystem = new FileSystem();
-            this.logger = IsQuietMode ? (ITaskLogger)new QuietTaskLogger(Log) : (ITaskLogger)new TaskLogger(Log);
+            this.logger = new TaskLogger(Log);
         }
 
         internal AggregateConfig(IFileSystem fileSystem, ITaskLogger logger)

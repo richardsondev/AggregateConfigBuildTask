@@ -96,6 +96,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="value">The object to convert to JsonElement.</param>
         /// <returns>A JsonElement representing the object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
         public static async Task<JsonElement> ConvertObjectToJsonElement(object value)
         {
             if (value == null)
@@ -137,6 +138,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="element">The JsonElement to convert.</param>
         /// <returns>An object representing the JsonElement.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when we fail to find an .NET type for the <see cref="JsonElement"/>.</exception>
         public static object ConvertJsonElementToObject(JsonElement element)
         {
             switch (element.ValueKind)

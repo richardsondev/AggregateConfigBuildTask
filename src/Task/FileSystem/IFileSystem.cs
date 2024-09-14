@@ -50,7 +50,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="directoryPath">The full path of the directory to check.</param>
         /// <returns>
-        /// <c>true</c> if the directory exists (i.e., if any files are present in that directory); 
+        /// <c>true</c> if the directory exists (i.e., if any files are present in that directory);
         /// otherwise, <c>false</c>.
         /// </returns>
         /// <remarks>
@@ -64,7 +64,7 @@ namespace AggregateConfigBuildTask
         /// </summary>
         /// <param name="directoryPath">The full path of the directory to create.</param>
         /// <remarks>
-        /// If the directory already exists, no action is taken. If any part of the directory path does not exist, 
+        /// If the directory already exists, no action is taken. If any part of the directory path does not exist,
         /// all necessary subdirectories are created. Throws an exception if the directory cannot be created.
         /// </remarks>
         void CreateDirectory(string directoryPath);

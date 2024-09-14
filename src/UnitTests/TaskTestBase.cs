@@ -1,4 +1,4 @@
-using AggregateConfigBuildTask.Contracts;
+﻿using AggregateConfigBuildTask.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -475,6 +475,122 @@ namespace AggregateConfigBuildTask.Tests.Unit
                     Assert.IsTrue(OptionExistsWithSource(json["options"], $"Option {optionIndex}", $"file{fileIndex}"));
                 }
             }
+        }
+
+        [TestMethod]
+        [Description("Test that files are correctly translated between ARM, JSON, and YAML.")]
+        public void ShouldTranslateBetweenFormatsAndValidateNoDataLoss()
+        {
+            // Test matrix for all combinations
+            var testCases = new[]
+            {
+                new { InputType = "arm", Step1OutputType = "json", Step2OutputType = "yml" },
+                new { InputType = "arm", Step1OutputType = "yml", Step2OutputType = "json" },
+                new { InputType = "json", Step1OutputType = "arm", Step2OutputType = "yml" },
+                new { InputType = "json", Step1OutputType = "yml", Step2OutputType = "arm" },
+                new { InputType = "yml", Step1OutputType = "arm", Step2OutputType = "json" },
+                new { InputType = "yml", Step1OutputType = "json", Step2OutputType = "arm" }
+            };
+
+            Assert.IsTrue(testCases.Length > 0);
+
+            foreach (var testCase in testCases)
+            {
+                // Arrange: Prepare paths and sample data based on the input type.
+                var paths = PrepareFilePaths(testCase.InputType, testCase.Step1OutputType, testCase.Step2OutputType);
+
+                virtualFileSystem.CreateDirectory(paths.inputDir);
+                virtualFileSystem.CreateDirectory(paths.step1Dir);
+                virtualFileSystem.CreateDirectory(paths.step2Dir);
+                virtualFileSystem.CreateDirectory(paths.finalDir);
+
+                virtualFileSystem.WriteAllText(paths.inputFilePath, GetSampleDataForType(testCase.InputType));
+
+                // Step 1: Convert Input -> Step 1 Output
+                ExecuteTranslationTask(testCase.InputType, testCase.Step1OutputType, paths.inputDir, paths.step1OutputPath);
+
+                // Step 2: Convert Step 1 Output -> Step 2 Output
+                ExecuteTranslationTask(testCase.Step1OutputType, testCase.Step2OutputType, paths.step1Dir, paths.step2OutputPath);
+
+                // Final Step: Convert Step 2 Output -> Original Input Type
+                ExecuteTranslationTask(testCase.Step2OutputType, testCase.InputType, paths.step2Dir, paths.finalOutputPath);
+
+                // Assert: Compare final output with original input to check no data loss
+                AssertNoDataLoss(paths.inputFilePath, paths.finalOutputPath, testCase.InputType);
+
+                // Clear the virtual file system for the next run
+                ((VirtualFileSystem)virtualFileSystem).FormatSystem();
+            }
+        }
+
+        private (string inputDir, string step1Dir, string step2Dir, string finalDir, string inputFilePath, string step1OutputPath, string step2OutputPath, string finalOutputPath)
+            PrepareFilePaths(string inputType, string step1OutputType, string step2OutputType)
+        {
+            string inputDir = $"{testPath}\\input";
+            string step1Dir = $"{testPath}\\step1";
+            string step2Dir = $"{testPath}\\step2";
+            string finalDir = $"{testPath}\\final";
+
+            string inputFilePath = $"{inputDir}\\input.{(inputType == "arm" ? "json" : inputType)}";
+            string step1OutputPath = $"{step1Dir}\\step1_output.{(step1OutputType == "arm" ? "json" : step1OutputType)}";
+            string step2OutputPath = $"{step2Dir}\\step2_output.{(step2OutputType == "arm" ? "json" : step2OutputType)}";
+            string finalOutputPath = $"{finalDir}\\final_output.{(inputType == "arm" ? "json" : inputType)}";
+
+            return (inputDir, step1Dir, step2Dir, finalDir, inputFilePath, step1OutputPath, step2OutputPath, finalOutputPath);
+        }
+
+        private void ExecuteTranslationTask(string inputType, string outputType, string inputFilePath, string outputFilePath)
+        {
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
+            {
+                InputDirectory = inputFilePath,
+                InputType = inputType,
+                OutputFile = outputFilePath,
+                OutputType = outputType,
+                BuildEngine = Mock.Of<IBuildEngine>()
+            };
+            bool result = task.Execute();
+            Assert.IsTrue(result, $"Failed translation: {inputType} -> {outputType}");
+        }
+
+        private void AssertNoDataLoss(string originalFilePath, string finalFilePath, string inputType)
+        {
+            string originalInput = virtualFileSystem.ReadAllText(originalFilePath);
+            string finalOutput = virtualFileSystem.ReadAllText(finalFilePath);
+            Assert.AreEqual(originalInput, finalOutput, $"Data mismatch after full conversion cycle for {inputType}");
+        }
+
+        private static string GetSampleDataForType(string type)
+        {
+            return type switch
+            {
+                "json" => @"{
+  ""options"": [
+    {
+      ""name"": ""Option 1"",
+      ""description"": ""First option""
+    }
+  ]
+}",
+                "arm" => @"{
+  ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
+  ""contentVersion"": ""1.0.0.0"",
+  ""parameters"": {
+    ""options"": {
+      ""type"": ""object"",
+      ""value"": {
+        ""name"": ""Option 1"",
+        ""description"": ""First option""
+      }
+    }
+  }
+}",
+                "yml" => @"options:
+- name: Option 1
+  description: First option
+",
+                _ => throw new InvalidOperationException("Unknown type")
+            };
         }
 
         /// <summary>

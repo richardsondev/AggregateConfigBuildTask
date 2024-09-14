@@ -9,3 +9,9 @@ dotnet_separate_import_directive_groups = true
 
 # Missing usings should be reported as error (IDE0005)
 dotnet_diagnostic.IDE0005.severity = error
+
+# AsyncFixer findings as errors
+dotnet_diagnostic.AsyncFixer01.severity = error
+dotnet_diagnostic.AsyncFixer02.severity = error
+dotnet_diagnostic.AsyncFixer03.severity = error
+dotnet_diagnostic.AsyncFixer04.severity = error

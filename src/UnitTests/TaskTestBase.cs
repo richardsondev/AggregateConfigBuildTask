@@ -568,7 +568,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
   ""options"": [
     {
       ""name"": ""Option 1"",
-      ""description"": ""First option""
+      ""description"": ""First option"",
+      ""isTrue"": true,
+      ""number"": 100
     }
   ]
 }",
@@ -580,7 +582,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
       ""type"": ""object"",
       ""value"": {
         ""name"": ""Option 1"",
-        ""description"": ""First option""
+        ""description"": ""First option"",
+        ""isTrue"": true,
+        ""number"": 100
       }
     }
   }
@@ -588,6 +592,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 "yml" => @"options:
 - name: Option 1
   description: First option
+  isTrue: true
+  number: 100
 ",
                 _ => throw new InvalidOperationException("Unknown type")
             };

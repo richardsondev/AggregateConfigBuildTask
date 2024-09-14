@@ -13,14 +13,17 @@ namespace AggregateConfigBuildTask.Tests.Unit
     public class TaskTestBase
     {
         private string testPath;
-        internal IFileSystem mockFileSystem;
         private StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+
+        private Mock<ITaskLogger> mockLogger;
+        internal IFileSystem virtualFileSystem;
 
         public void TestInitialize(bool isWindowsMode, string testPath)
         {
             this.testPath = testPath;
-            this.mockFileSystem = new VirtualFileSystem(isWindowsMode);
-            mockFileSystem.CreateDirectory(testPath);
+            this.mockLogger = new Mock<ITaskLogger> { DefaultValue = DefaultValue.Mock };
+            this.virtualFileSystem = new VirtualFileSystem(isWindowsMode);
+            this.virtualFileSystem.CreateDirectory(testPath);
         }
 
         [TestMethod]
@@ -28,16 +31,16 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldGenerateJsonOutput()
         {
             // Arrange: Prepare sample YAML data in the mock file system.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'");
-            mockFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
             description: 'Second option'");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -51,7 +54,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Check that output was generated correctly.
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.IsTrue(json.ContainsKey("options"));
             Assert.AreEqual(2, ((IEnumerable<object>)json.GetValueOrDefault("options")).Count());
@@ -62,17 +65,17 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldGenerateArmParameterOutput()
         {
             // Arrange: Prepare sample YAML data in the mock file system.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'");
-            mockFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
             description: 'Second option'");
 
             // Create the task instance with the mock file system
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
@@ -86,7 +89,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Check the ARM output structure
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.IsTrue(armTemplate.ContainsKey("parameters"));
 
@@ -100,13 +103,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldAddSourceProperty()
         {
             // Arrange: Prepare sample YAML data with source property enabled.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'");
 
             // Create the task instance with the mock file system
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -120,7 +123,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, string>>>>(output);
             Assert.IsTrue(json["options"][0].ContainsKey("source"));
             Assert.AreEqual("file1", json["options"][0]["source"]);
@@ -131,17 +134,17 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldAddSourcePropertyMultipleFiles()
         {
             // Arrange: Prepare sample YAML data with source property enabled.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'
             additionalOptions:
               value: 'Good day'");
-            mockFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
             description: 'Second option'
-          - name: 'Option 3'
+          - name: '''Option 3'''
             description: 'Third option'
             additionalOptions:
               value: 'Good night'
@@ -150,7 +153,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             description: 'Text'");
 
             // Create the task instance with the mock file system
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -164,11 +167,11 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
             Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 1", "file1"));
             Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 2", "file2"));
-            Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 3", "file2"));
+            Assert.IsTrue(OptionExistsWithSource(json["options"], "'Option 3'", "file2"));
             Assert.IsTrue(OptionExistsWithSource(json["text"], "Text 1", "file2"));
         }
 
@@ -177,12 +180,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInJson()
         {
             // Arrange: Prepare sample YAML data.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -201,7 +204,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.AreEqual("TestRG", json["Group"]);
             Assert.AreEqual("Prod=West", json["Environment=Key"]);
@@ -212,12 +215,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInArmParameters()
         {
             // Arrange: Prepare sample YAML data.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -236,7 +239,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
@@ -249,7 +252,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldHandleEmptyDirectory()
         {
             // Arrange: No files added to the mock file system (empty directory).
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -262,7 +265,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Ensure the task fails and output is empty
             Assert.IsFalse(result);
-            bool outputExists = mockFileSystem.FileExists($"{testPath}\\output.json");
+            bool outputExists = virtualFileSystem.FileExists($"{testPath}\\output.json");
             Assert.IsFalse(outputExists, "No file should have been created!");
         }
 
@@ -271,12 +274,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldHandleInvalidYamlFormat()
         {
             // Arrange: Add invalid YAML file to the mock file system.
-            mockFileSystem.WriteAllText($"{testPath}\\invalid.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\invalid.yml", @"
         options:
           - name: 'Option 1'
             description: 'Unclosed value");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -296,13 +299,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldCorrectlyParseBooleanValues()
         {
             // Arrange: Prepare sample YAML data.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'
             isEnabled: true");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -315,7 +318,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
@@ -328,7 +331,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInJsonInput()
         {
             // Arrange: Prepare sample JSON data.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", @"
     {
         ""options"": [
             {
@@ -339,7 +342,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         ]
     }");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputType = InputType.Json.ToString(),
                 InputDirectory = testPath,
@@ -359,7 +362,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
@@ -375,7 +378,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInArmParameterFile()
         {
             // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
-            mockFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", @"
     {
         ""parameters"": {
             ""options"": {
@@ -391,7 +394,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
     }");
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputType = InputType.Arm.ToString(),
                 InputDirectory = testPath,
@@ -401,7 +404,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 AdditionalProperties = new Dictionary<string, string>
                 {
                     { "Group", "TestRG" },
-                    { "Environment", "Prod" }
+                    { "Environment", "'Prod'" }
                 }.Select(q => $"{q.Key}={q.Value}").ToArray(),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -411,11 +414,11 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
-            Assert.AreEqual("Prod", parameters.GetValue("Environment", comparison)["value"].Value<string>());
+            Assert.AreEqual("'Prod'", parameters.GetValue("Environment", comparison)["value"].Value<string>());
             Assert.AreEqual("String", parameters.GetValue("options", comparison)["value"].First()["source"].Type.ToString());
             Assert.AreEqual("file1.parameters", parameters.GetValue("options", comparison)["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
@@ -443,10 +446,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 }
 
                 // Write each YAML file to the mock file system
-                mockFileSystem.WriteAllText($"{testPath}\\file{fileIndex}.yml", sb.ToString());
+                virtualFileSystem.WriteAllText($"{testPath}\\file{fileIndex}.yml", sb.ToString());
             }
 
-            var task = new AggregateConfig(mockFileSystem)
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
@@ -460,7 +463,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added correctly for all files and options
             Assert.IsTrue(result);
-            string output = mockFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
 
             int optionIndexInTotal = 0;

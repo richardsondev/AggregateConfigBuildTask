@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <AssemblyName>AggregateConfig.Tests.Integration</AssemblyName>
@@ -63,7 +63,8 @@
             InputDirectory="$(MSBuildProjectDirectory)\out\arm"
             OutputFile="$(MSBuildProjectDirectory)\out\arm2yml\out.yml"
             OutputType="Yaml"
-            AddSourceProperty="true" />
+            AddSourceProperty="true"
+            IsQuietMode="true" />
 
         <!-- Embed output as resources in the assembly -->
         <ItemGroup>

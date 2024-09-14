@@ -40,7 +40,7 @@ namespace AggregateConfigBuildTask
             }
             set
             {
-                logger = value ? new QuietTaskLogger(Log) : logger;
+                logger = value && !(logger is QuietTaskLogger) ? new QuietTaskLogger(Log) : logger;
             }
         }
         /* End incoming properties */

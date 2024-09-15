@@ -59,6 +59,16 @@ jobs:
           src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
           src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.snupkg
 
+    - name: Build documentation
+      run: docfx docfx.json
+
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      with:
+        name: Documentation
+        path: |
+          _site/
+
   integration_tests:
     needs: build
     strategy:

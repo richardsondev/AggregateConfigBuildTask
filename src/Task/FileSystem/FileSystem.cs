@@ -35,9 +35,9 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc/>
-        public bool DirectoryExists(string path)
+        public bool DirectoryExists(string directoryPath)
         {
-            return Directory.Exists(path);
+            return Directory.Exists(directoryPath);
         }
 
         /// <inheritdoc/>
@@ -53,9 +53,9 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc/>
-        public Stream OpenRead(string path)
+        public Stream OpenRead(string inputPath)
         {
-            return File.OpenRead(path);
+            return File.OpenRead(inputPath);
         }
     }
 }

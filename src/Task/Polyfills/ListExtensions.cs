@@ -14,6 +14,8 @@ namespace AggregateConfigBuildTask
         /// <param name="source">The list to split into chunks.</param>
         /// <param name="chunkSize">The size of each chunk.</param>
         /// <returns>An IEnumerable of string arrays, each containing a chunk of the original list.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">When chunk size is 0 or less</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         public static IEnumerable<IEnumerable<string>> Chunk(this List<string> source, int chunkSize)
         {
             if (source == null)

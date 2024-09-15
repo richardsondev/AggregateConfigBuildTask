@@ -21,33 +21,31 @@ namespace AggregateConfigBuildTask.FileHandlers
         public async ValueTask<JsonElement> ReadInput(string inputPath)
         {
             using (var stream = fileSystem.OpenRead(inputPath))
+            using (var jsonDoc = await JsonDocument.ParseAsync(stream).ConfigureAwait(false))
             {
-                using (var jsonDoc = await JsonDocument.ParseAsync(stream).ConfigureAwait(false))
+                if (jsonDoc.RootElement.TryGetProperty("parameters", out JsonElement parameters))
                 {
-                    if (jsonDoc.RootElement.TryGetProperty("parameters", out JsonElement parameters))
+                    var modifiedParameters = new JsonObject();
+
+                    foreach (var parameter in parameters.EnumerateObject())
                     {
-                        var modifiedParameters = new JsonObject();
-
-                        foreach (var parameter in parameters.EnumerateObject())
+                        if (parameter.Value.ValueKind == JsonValueKind.Object)
                         {
-                            if (parameter.Value.ValueKind == JsonValueKind.Object)
-                            {
-                                var paramObject = ConvertElementToNode(parameter.Value).AsObject();
+                            var paramObject = ConvertElementToNode(parameter.Value).AsObject();
 
-                                // If the top-level object contains the "value" key, return the value
-                                if (paramObject.ContainsKey("value"))
-                                {
-                                    modifiedParameters[parameter.Name] = paramObject["value"]?.DeepClone();
-                                }
+                            // If the top-level object contains the "value" key, return the value
+                            if (paramObject.ContainsKey("value"))
+                            {
+                                modifiedParameters[parameter.Name] = paramObject["value"]?.DeepClone();
                             }
                         }
-
-                        var modifiedJson = modifiedParameters.ToJsonString();
-                        return JsonSerializer.Deserialize<JsonElement>(modifiedJson);
                     }
 
-                    return jsonDoc.RootElement.Clone();
+                    var modifiedJson = modifiedParameters.ToJsonString();
+                    return JsonSerializer.Deserialize<JsonElement>(modifiedJson);
                 }
+
+                return jsonDoc.RootElement.Clone();
             }
         }
 
@@ -90,6 +88,7 @@ namespace AggregateConfigBuildTask.FileHandlers
         /// </summary>
         /// <param name="value">The JsonElement value to evaluate.</param>
         /// <returns>A string representing the ARM template parameter type.</returns>
+        /// <exception cref="ArgumentException">When a Json type cannot be mapped to an ARM template type</exception>
         private static string GetParameterType(JsonElement value)
         {
             switch (value.ValueKind)
@@ -121,9 +120,7 @@ namespace AggregateConfigBuildTask.FileHandlers
             var jsonString = element.GetRawText();
 
             // Parse the string into a JsonNode
-            var jsonNode = JsonNode.Parse(jsonString);
-
-            return jsonNode;
+            return JsonNode.Parse(jsonString);
         }
     }
 }

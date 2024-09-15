@@ -64,6 +64,12 @@ jobs:
       with:
         args: install docfx
 
+    - name: Download material.zip
+      run: wget https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -O material.zip
+
+    - name: Extract material.zip
+      run: unzip material.zip -d ./material
+
     - name: Build documentation
       run: docfx docfx.json
 

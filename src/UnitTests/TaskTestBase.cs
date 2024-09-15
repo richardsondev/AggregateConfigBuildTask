@@ -553,44 +553,83 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             return type switch
             {
-                "json" => @"{
-  ""options"": [
+                "json" => """
+{
+  "options": [
     {
-      ""name"": ""Option 1"",
-      ""description"": ""First option"",
-      ""isTrue"": true,
-      ""number"": 100
+      "name": "Option 1",
+      "description": "First option",
+      "isTrue": true,
+      "number": 100,
+      "nested": [
+        {
+          "name": "Nested option 1",
+          "description": "Nested first option",
+          "isTrue": true,
+          "number": 1001
+        },
+        {
+          "name": "Nested option 2",
+          "description": "Nested second option"
+        }
+      ]
     }
   ]
-}",
-                "arm" => @"{
-  ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
-  ""contentVersion"": ""1.0.0.0"",
-  ""parameters"": {
-    ""options"": {
-      ""type"": ""object"",
-      ""value"": {
-        ""name"": ""Option 1"",
-        ""description"": ""First option"",
-        ""isTrue"": true,
-        ""number"": 100
+}
+""",
+                "arm" => """
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "options": {
+      "type": "object",
+      "value": {
+        "name": "Option 1",
+        "description": "First option",
+        "isTrue": true,
+        "number": 100,
+        "nested": [
+          {
+            "name": "Nested option 1",
+            "description": "Nested first option",
+            "isTrue": true,
+            "number": 1002
+          },
+          {
+            "name": "Nested option 2",
+            "description": "Nested second option"
+          }
+        ]
       }
     }
   }
-}",
+}
+""",
                 "yml" => @"options:
 - name: Option 1
   description: First option
   isTrue: true
   number: 100
+  nested:
+  - name: Nested option 1
+    description: Nested first option
+    isTrue: true
+    number: 1003
+  - name: Nested option 2
+    description: Nested second option
 ",
+
                 _ => throw new InvalidOperationException("Unknown type")
             };
         }
 
         /// <summary>
-        /// Check if an option exists with a given name and source
+        /// Check if an option exists with a given name and source in the top-level of the given root tree.
         /// </summary>
+        /// <param name="options">The tree to search within.</param>
+        /// <param name="optionName">The option to search for.</param>
+        /// <param name="expectedSource">The expected source property on the option object.</param>
         private static bool OptionExistsWithSource(List<Dictionary<string, object>> options, string optionName, string expectedSource)
         {
             return options.Any(option =>

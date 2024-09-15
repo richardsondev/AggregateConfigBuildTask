@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask
 {
+    /// <summary>
+    /// Contains extension methods for <see cref="IEnumerable{T}"/>, providing additional
+    /// functionality available in future .NET versions.
+    /// </summary>
     public static class ListExtensions
     {
         /// <summary>

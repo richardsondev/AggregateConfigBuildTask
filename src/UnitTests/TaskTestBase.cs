@@ -378,21 +378,22 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInArmParameterFile()
         {
             // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", """
     {
-        ""parameters"": {
-            ""options"": {
-                ""type"": ""array"",
-                ""value"": [
+        "parameters": {
+            "options": {
+                "type": "array",
+                "value": [
                     {
-                        ""name"": ""Option 1"",
-                        ""description"": ""First option"",
-                        ""isEnabled"": true
+                        "name": "Option 1",
+                        "description": "First option",
+                        "isEnabled": true
                     }
                 ]
             }
         }
-    }");
+    }
+""");
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -441,8 +442,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
                 for (int optionIndex = 1; optionIndex <= totalOptionsPerFile; optionIndex++)
                 {
-                    sb.AppendLine($"  - name: 'Option {optionIndex}'");
-                    sb.AppendLine($"    description: 'Description for Option {optionIndex}'");
+                    sb.AppendLine($"  - name: 'Option {optionIndex}'")
+                        .AppendLine($"    description: 'Description for Option {optionIndex}'");
                 }
 
                 // Write each YAML file to the mock file system

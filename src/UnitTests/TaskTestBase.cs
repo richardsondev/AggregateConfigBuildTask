@@ -1,4 +1,3 @@
-﻿using AggregateConfigBuildTask.Contracts;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
@@ -13,7 +12,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
     public class TaskTestBase
     {
         private string testPath;
-        private StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+        private readonly StringComparison comparison = StringComparison.OrdinalIgnoreCase;
 
         private Mock<ITaskLogger> mockLogger;
         internal IFileSystem virtualFileSystem;
@@ -44,7 +43,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -79,7 +78,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -113,7 +112,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -157,7 +156,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -189,7 +188,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -224,7 +223,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -256,7 +255,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -283,7 +282,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -309,7 +308,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -331,23 +330,24 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInJsonInput()
         {
             // Arrange: Prepare sample JSON data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", """
     {
-        ""options"": [
+        "options": [
             {
-                ""name"": ""Option 1"",
-                ""description"": ""First option"",
-                ""isEnabled"": true
+                "name": "Option 1",
+                "description": "First option",
+                "isEnabled": true
             }
         ]
-    }");
+    }
+""");
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
-                InputType = InputType.Json.ToString(),
+                InputType = nameof(FileType.Json),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -378,28 +378,29 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public void ShouldIncludeAdditionalPropertiesInArmParameterFile()
         {
             // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", @"
+            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", """
     {
-        ""parameters"": {
-            ""options"": {
-                ""type"": ""array"",
-                ""value"": [
+        "parameters": {
+            "options": {
+                "type": "array",
+                "value": [
                     {
-                        ""name"": ""Option 1"",
-                        ""description"": ""First option"",
-                        ""isEnabled"": true
+                        "name": "Option 1",
+                        "description": "First option",
+                        "isEnabled": true
                     }
                 ]
             }
         }
-    }");
+    }
+""");
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
-                InputType = InputType.Arm.ToString(),
+                InputType = nameof(FileType.Arm),
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.parameters.json",
-                OutputType = OutputType.Arm.ToString(),
+                OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
                 AdditionalProperties = new Dictionary<string, string>
                 {
@@ -441,8 +442,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
                 for (int optionIndex = 1; optionIndex <= totalOptionsPerFile; optionIndex++)
                 {
-                    sb.AppendLine($"  - name: 'Option {optionIndex}'");
-                    sb.AppendLine($"    description: 'Description for Option {optionIndex}'");
+                    sb.AppendLine($"  - name: 'Option {optionIndex}'")
+                        .AppendLine($"    description: 'Description for Option {optionIndex}'");
                 }
 
                 // Write each YAML file to the mock file system
@@ -453,7 +454,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 InputDirectory = testPath,
                 OutputFile = testPath + @"\output.json",
-                OutputType = OutputType.Json.ToString(),
+                OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -553,44 +554,83 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             return type switch
             {
-                "json" => @"{
-  ""options"": [
+                "json" => """
+{
+  "options": [
     {
-      ""name"": ""Option 1"",
-      ""description"": ""First option"",
-      ""isTrue"": true,
-      ""number"": 100
+      "name": "Option 1",
+      "description": "First option",
+      "isTrue": true,
+      "number": 100,
+      "nested": [
+        {
+          "name": "Nested option 1",
+          "description": "Nested first option",
+          "isTrue": true,
+          "number": 1001
+        },
+        {
+          "name": "Nested option 2",
+          "description": "Nested second option"
+        }
+      ]
     }
   ]
-}",
-                "arm" => @"{
-  ""$schema"": ""https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#"",
-  ""contentVersion"": ""1.0.0.0"",
-  ""parameters"": {
-    ""options"": {
-      ""type"": ""object"",
-      ""value"": {
-        ""name"": ""Option 1"",
-        ""description"": ""First option"",
-        ""isTrue"": true,
-        ""number"": 100
+}
+""",
+                "arm" => """
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "options": {
+      "type": "object",
+      "value": {
+        "name": "Option 1",
+        "description": "First option",
+        "isTrue": true,
+        "number": 100,
+        "nested": [
+          {
+            "name": "Nested option 1",
+            "description": "Nested first option",
+            "isTrue": true,
+            "number": 1002
+          },
+          {
+            "name": "Nested option 2",
+            "description": "Nested second option"
+          }
+        ]
       }
     }
   }
-}",
+}
+""",
                 "yml" => @"options:
 - name: Option 1
   description: First option
   isTrue: true
   number: 100
+  nested:
+  - name: Nested option 1
+    description: Nested first option
+    isTrue: true
+    number: 1003
+  - name: Nested option 2
+    description: Nested second option
 ",
+
                 _ => throw new InvalidOperationException("Unknown type")
             };
         }
 
         /// <summary>
-        /// Check if an option exists with a given name and source
+        /// Check if an option exists with a given name and source in the top-level of the given root tree.
         /// </summary>
+        /// <param name="options">The tree to search within.</param>
+        /// <param name="optionName">The option to search for.</param>
+        /// <param name="expectedSource">The expected source property on the option object.</param>
         private static bool OptionExistsWithSource(List<Dictionary<string, object>> options, string optionName, string expectedSource)
         {
             return options.Any(option =>

@@ -74,6 +74,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 throw new IOException($"Directory not found '{directoryPath}'.");
             }
 
+            // As a part of the testing, we want to ensure we only write once to each file.
+            if (FileExists(path))
+            {
+                throw new IOException($"Tried to write to existing file '{path}'!");
+            }
+
             fileSystem[path] = text;
         }
 
@@ -94,14 +100,14 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         /// <inheritdoc/>
-        public bool DirectoryExists(string path)
+        public bool DirectoryExists(string directoryPath)
         {
-            path = NormalizePath(path);
-            path = EnsureTrailingDirectorySeparator(path);
+            directoryPath = NormalizePath(directoryPath);
+            directoryPath = EnsureTrailingDirectorySeparator(directoryPath);
 
             foreach (var file in fileSystem.Keys)
             {
-                if (file.Equals(path, StringComparison))
+                if (file.Equals(directoryPath, StringComparison))
                 {
                     return true;
                 }
@@ -111,12 +117,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         /// <inheritdoc/>
-        public void CreateDirectory(string path)
+        public void CreateDirectory(string directoryPath)
         {
-            path = NormalizePath(path);
-            path = EnsureTrailingDirectorySeparator(path);
+            directoryPath = NormalizePath(directoryPath);
+            directoryPath = EnsureTrailingDirectorySeparator(directoryPath);
 
-            fileSystem[path] = string.Empty;
+            fileSystem[directoryPath] = string.Empty;
         }
 
         /// <inheritdoc />
@@ -157,6 +163,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         /// <summary>
         /// Converts a file search pattern (with * and ?) to a regex pattern.
         /// </summary>
+        /// <param name="searchPattern">The wild card path expression to convert to a regex pattern.</param>
         private static string ConvertPatternToRegex(string searchPattern)
         {
             // Escape special regex characters except for * and ?

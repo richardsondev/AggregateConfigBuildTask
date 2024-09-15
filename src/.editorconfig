@@ -16,3 +16,6 @@ dotnet_diagnostic.AsyncFixer02.severity = error
 dotnet_diagnostic.AsyncFixer03.severity = error
 dotnet_diagnostic.AsyncFixer04.severity = error
 dotnet_diagnostic.AsyncFixer05.severity = error
+
+# Roslynator findings as errors
+dotnet_analyzer_diagnostic.category-roslynator.severity = error

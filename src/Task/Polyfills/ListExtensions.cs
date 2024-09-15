@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask
 {
+    /// <summary>
+    /// Contains extension methods for <see cref="IEnumerable{T}"/>, providing additional
+    /// functionality available in future .NET versions.
+    /// </summary>
     public static class ListExtensions
     {
         /// <summary>
@@ -14,6 +18,8 @@ namespace AggregateConfigBuildTask
         /// <param name="source">The list to split into chunks.</param>
         /// <param name="chunkSize">The size of each chunk.</param>
         /// <returns>An IEnumerable of string arrays, each containing a chunk of the original list.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">When chunk size is 0 or less</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
         public static IEnumerable<IEnumerable<string>> Chunk(this List<string> source, int chunkSize)
         {
             if (source == null)
@@ -26,9 +32,14 @@ namespace AggregateConfigBuildTask
                 throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be greater than 0.");
             }
 
-            for (int i = 0; i < source.Count; i += chunkSize)
+            return FetchChunks();
+
+            IEnumerable<IEnumerable<string>> FetchChunks()
             {
-                yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
+                for (int i = 0; i < source.Count; i += chunkSize)
+                {
+                    yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
+                }
             }
         }
 

@@ -101,15 +101,36 @@ You can also output the aggregated configuration back into YAML format:
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
+    <AggregateConfig 
+      InputDirectory="Configs"
+      OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
+      OutputType="Yaml" />
+  </Target>
+
+</Project>
+```
+
+### Additional Properties
+
+At build time, you can inject additional properties into the top-level of your output configuration as key-value pairs. Conditionals and variables are supported.
+
+In this example, two additional properties (`ResourceGroup` and `Environment`) are defined and will be included in the YAML output's top-level structure. This allows for dynamic property injection at build time.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
     <ItemGroup>
-        <AdditionalProperty Include="ResourceGroup">
-            <Value>TestRG</Value>
-        </AdditionalProperty>
-        <AdditionalProperty Include="Environment">
-            <Value>Production</Value>
-        </AdditionalProperty>
+      <!-- Define additional properties as key-value pairs -->
+      <AdditionalProperty Include="ResourceGroup">
+        <Value>TestRG</Value>
+      </AdditionalProperty>
+      <AdditionalProperty Include="Environment">
+        <Value>Production</Value>
+      </AdditionalProperty>
     </ItemGroup>
 
+    <!-- Aggregate configuration into a YAML file -->
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
@@ -119,6 +140,11 @@ You can also output the aggregated configuration back into YAML format:
 
 </Project>
 ```
+
+#### Explanation:
+- **Additional Properties:** The `AdditionalProperty` items store key-value pairs (`ResourceGroup=TestRG` and `Environment=Production`). The key is set in the `Include` attribute, and the value is defined in a nested `<Value>` element.
+- **ItemGroup:** Groups the additional properties, which will later be referenced in the task as `@(AdditionalProperty)`.
+- **AggregateConfig Task:** This task collects the configurations from the `Configs` directory and aggregates them into a YAML output file. The `AdditionalProperties` item group is passed to the task, ensuring that the properties are injected into the top-level of the output.
 
 ### Embedding Output Files as Resources
 

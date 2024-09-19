@@ -103,23 +103,32 @@
     </Target>
 
     <Target Name="Sample3" BeforeTargets="PrepareForBuild" AfterTargets="Sample2">
-        <ItemGroup>
-            <AdditionalProperty Include="ResourceGroup">
-                <Value>TestRG</Value>
-            </AdditionalProperty>
-            <AdditionalProperty Include="Environment">
-                <Value>Production</Value>
-            </AdditionalProperty>
-        </ItemGroup>
-
         <AggregateConfig
           InputDirectory="Configs"
           OutputFile="$(MSBuildProjectDirectory)\out\sample3_output.yaml"
-          OutputType="Yaml"
-          AdditionalProperties="@(AdditionalProperty)" />
+          OutputType="Yaml" />
+    </Target>
+    
+    <Target Name="Sample4"  BeforeTargets="PrepareForBuild" AfterTargets="Sample3">
+
+      <ItemGroup>
+        <AdditionalProperty Include="ResourceGroup">
+          <Value>TestRG</Value>
+        </AdditionalProperty>
+        <AdditionalProperty Include="Environment">
+          <Value>Production</Value>
+        </AdditionalProperty>
+      </ItemGroup>
+
+      <AggregateConfig 
+        InputDirectory="Configs"
+        OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
+        OutputType="Yaml"
+        AdditionalProperties="@(AdditionalProperty)" />
+
     </Target>
 
-    <Target Name="Sample4" BeforeTargets="PrepareForBuild" AfterTargets="Sample3">
+    <Target Name="Sample5" BeforeTargets="PrepareForBuild" AfterTargets="Sample4">
 
         <AggregateConfig
           InputDirectory="Configs"

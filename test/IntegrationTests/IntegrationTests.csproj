@@ -122,7 +122,7 @@
 
       <AggregateConfig 
         InputDirectory="Configs"
-        OutputFile="$(MSBuildProjectDirectory)\out\output.yaml"
+        OutputFile="$(MSBuildProjectDirectory)\out\sample4_output.yaml"
         OutputType="Yaml"
         AdditionalProperties="@(AdditionalProperty)" />
 
@@ -132,11 +132,11 @@
 
         <AggregateConfig
           InputDirectory="Configs"
-          OutputFile="$(MSBuildProjectDirectory)\out\sample4_output.json"
+          OutputFile="$(MSBuildProjectDirectory)\out\sample5_output.json"
           OutputType="Json" />
 
         <ItemGroup>
-            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\sample4_output.json" />
+            <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\sample5_output.json" />
         </ItemGroup>
     </Target>
 

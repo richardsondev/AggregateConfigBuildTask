@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <AssemblyName>AggregateConfig.Tests.Integration</AssemblyName>
@@ -45,9 +45,20 @@
 
         <!-- Run the AggregateConfig to generate the output.parameters.json -->
         <ItemGroup>
+            <!-- Existing legacy format properties -->
             <AdditionalProperty Include="ResourceGroup=Test=RG" />
             <AdditionalProperty Include="Environment=Production" />
             <AdditionalProperty Include="Description=Project V1" />
+            <!-- New properties in modern format -->
+            <AdditionalProperty Include="ProjectName">
+                <Value>MyProject</Value>
+            </AdditionalProperty>
+            <AdditionalProperty Include="Version">
+                <Value>1.0.0</Value>
+            </AdditionalProperty>
+            <AdditionalProperty Include="Owner">
+                <Value>John Doe</Value>
+            </AdditionalProperty>
         </ItemGroup>
         <AggregateConfig
             InputDirectory="Configs"
@@ -76,37 +87,29 @@
     </Target>
 
     <Target Name="Sample1" BeforeTargets="PrepareForBuild" AfterTargets="InvokeTask">
-        <ItemGroup>
-            <AdditionalProperty Include="ResourceGroup=TestRG" />
-            <AdditionalProperty Include="Environment=Production" />
-        </ItemGroup>
-
         <AggregateConfig
           InputType="Yaml"
           InputDirectory="Configs"
           OutputFile="$(MSBuildProjectDirectory)\out\sample1_output.json"
           AddSourceProperty="true"
-          OutputType="Json"
-          AdditionalProperties="@(AdditionalProperty)" />
+          OutputType="Json" />
     </Target>
 
     <Target Name="Sample2" BeforeTargets="PrepareForBuild" AfterTargets="Sample1">
-        <ItemGroup>
-            <AdditionalProperty Include="ResourceGroup=TestRG" />
-            <AdditionalProperty Include="Environment=Production" />
-        </ItemGroup>
-
         <AggregateConfig
           InputDirectory="Configs"
           OutputFile="$(MSBuildProjectDirectory)\out\sample2_output.parameters.json"
-          OutputType="Arm"
-          AdditionalProperties="@(AdditionalProperty)" />
+          OutputType="Arm" />
     </Target>
 
     <Target Name="Sample3" BeforeTargets="PrepareForBuild" AfterTargets="Sample2">
         <ItemGroup>
-            <AdditionalProperty Include="ResourceGroup=TestRG" />
-            <AdditionalProperty Include="Environment=Production" />
+            <AdditionalProperty Include="ResourceGroup">
+                <Value>TestRG</Value>
+            </AdditionalProperty>
+            <AdditionalProperty Include="Environment">
+                <Value>Production</Value>
+            </AdditionalProperty>
         </ItemGroup>
 
         <AggregateConfig
@@ -117,16 +120,11 @@
     </Target>
 
     <Target Name="Sample4" BeforeTargets="PrepareForBuild" AfterTargets="Sample3">
-        <ItemGroup>
-            <AdditionalProperty Include="ResourceGroup=TestRG" />
-            <AdditionalProperty Include="Environment=Production" />
-        </ItemGroup>
 
         <AggregateConfig
           InputDirectory="Configs"
           OutputFile="$(MSBuildProjectDirectory)\out\sample4_output.json"
-          OutputType="Json"
-          AdditionalProperties="@(AdditionalProperty)" />
+          OutputType="Json" />
 
         <ItemGroup>
             <EmbeddedResource Include="$(MSBuildProjectDirectory)\out\sample4_output.json" />

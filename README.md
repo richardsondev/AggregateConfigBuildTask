@@ -60,18 +60,12 @@ In your `.csproj` file, use the task to aggregate YAML files and output them in 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <AdditionalProperty Include="ResourceGroup=TestRG" />
-      <AdditionalProperty Include="Environment=Production" />
-    </ItemGroup>
-
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
       AddSourceProperty="true"
       InputType="Yaml"
-      OutputType="Json"
-      AdditionalProperties="@(AdditionalProperty)" />
+      OutputType="Json" />
   </Target>
 
 </Project>
@@ -81,7 +75,6 @@ In this example:
 - The `Configs` directory contains the YAML files to be aggregated.
 - The output will be generated as `out/output.json`.
 - The `AddSourceProperty` flag adds the source file name to each configuration entry.
-- The `AdditionalProperties` are injected into the top-level of the output as custom metadata.
 
 ### ARM Template Parameters Output Example
 
@@ -91,16 +84,10 @@ You can also generate Azure ARM template parameters. Here's how to modify the co
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Target Name="AggregateConfigsForARM" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <AdditionalProperty Include="ResourceGroup=TestRG" />
-      <AdditionalProperty Include="Environment=Production" />
-    </ItemGroup>
-
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.parameters.json"
-      OutputType="Arm"
-      AdditionalProperties="@(AdditionalProperty)" />
+      OutputType="Arm" />
   </Target>
 
 </Project>
@@ -115,8 +102,12 @@ You can also output the aggregated configuration back into YAML format:
 
   <Target Name="AggregateConfigsToYAML" BeforeTargets="PrepareForBuild">
     <ItemGroup>
-      <AdditionalProperty Include="ResourceGroup=TestRG" />
-      <AdditionalProperty Include="Environment=Production" />
+        <AdditionalProperty Include="ResourceGroup">
+            <Value>TestRG</Value>
+        </AdditionalProperty>
+        <AdditionalProperty Include="Environment">
+            <Value>Production</Value>
+        </AdditionalProperty>
     </ItemGroup>
 
     <AggregateConfig 
@@ -137,16 +128,10 @@ You can embed the output files (such as the generated JSON) as resources in the 
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Target Name="AggregateConfigs" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <AdditionalProperty Include="ResourceGroup=TestRG" />
-      <AdditionalProperty Include="Environment=Production" />
-    </ItemGroup>
-
     <AggregateConfig 
       InputDirectory="Configs"
       OutputFile="$(MSBuildProjectDirectory)\out\output.json"
-      OutputType="Json"
-      AdditionalProperties="@(AdditionalProperty)" />
+      OutputType="Json" />
 
     <!-- Embed output.json as a resource in the assembly -->
     <ItemGroup>

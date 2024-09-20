@@ -46,26 +46,26 @@
         <!-- Run the AggregateConfig to generate the output.parameters.json -->
         <ItemGroup>
             <!-- Existing legacy format properties -->
-            <AdditionalProperty Include="ResourceGroup=Test=RG" />
-            <AdditionalProperty Include="Environment=Production" />
-            <AdditionalProperty Include="Description=Project V1" />
+            <AdditionalConfig Include="ResourceGroup=Test=RG" />
+            <AdditionalConfig Include="Environment=Production" />
+            <AdditionalConfig Include="Description=Project V1" />
             <!-- New properties in modern format -->
-            <AdditionalProperty Include="ProjectName">
+            <AdditionalConfig Include="ProjectName">
                 <Value>MyProject</Value>
-            </AdditionalProperty>
-            <AdditionalProperty Include="Version">
+            </AdditionalConfig>
+            <AdditionalConfig Include="Version">
                 <Value>1.0.0</Value>
-            </AdditionalProperty>
-            <AdditionalProperty Include="Owner">
+            </AdditionalConfig>
+            <AdditionalConfig Include="Owner">
                 <Value>John Doe</Value>
-            </AdditionalProperty>
+            </AdditionalConfig>
         </ItemGroup>
         <AggregateConfig
             InputDirectory="Configs"
             OutputFile="$(MSBuildProjectDirectory)\out\arm\test.parameters.json"
             OutputType="Arm"
             AddSourceProperty="true"
-            AdditionalProperties="@(AdditionalProperty)">
+            AdditionalProperties="@(AdditionalConfig)">
         </AggregateConfig>
 
         <!-- Run the AggregateConfig to convert the generated ARM parameter file back to yml -->

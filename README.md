@@ -14,6 +14,7 @@
 
 ## Links
 
+* Documentation: https://docs.richardson.dev/AggregateConfigBuildTask
 * NuGet.org: https://www.nuget.org/packages/AggregateConfigBuildTask
 * GitHub: https://github.com/richardsondev/AggregateConfigBuildTask
 

@@ -2,7 +2,7 @@ name: Deploy content to Pages
 
 on:
   push:
-    branches: ["main", "docfx"]
+    branches: ["main"]
 
   workflow_dispatch:
 
@@ -70,13 +70,13 @@ jobs:
         with:
           name: Documentation
           path: |
-            .
+            ./_site
 
-      #- name: Upload to Pages
-      #  uses: actions/upload-pages-artifact@v3
-      #  with:
-      #    path: '_site/'
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site/'
 
-      #- name: Deploy to GitHub Pages
-      #  id: deployment
-      #  uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

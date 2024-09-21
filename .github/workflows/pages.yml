@@ -21,7 +21,7 @@ jobs:
       name: github-pages
       #url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,27 +30,37 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Download DocFX
-        run: wget https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -O docfx.zip
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile docfx.zip
 
       - name: Extract DocFX
-        run: unzip docfx.zip -d ./docfx
+        shell: pwsh
+        run: |
+          Expand-Archive -Path docfx.zip -DestinationPath ./docfx
 
       - name: Download material.zip
-        run: wget https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -O material.zip
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -OutFile material.zip
 
       - name: Extract material.zip
-        run: unzip material.zip -d ./material
+        shell: pwsh
+        run: |
+          Expand-Archive -Path material.zip -DestinationPath ./material
 
       - name: Add header to README.md
+        shell: pwsh
         run: |
-          echo '---' > temp.md
-          echo 'outputFileName: index.html' >> temp.md
-          echo '---' >> temp.md
-          cat README.md >> temp.md
-          mv temp.md README.md
+          Add-Content -Path temp.md -Value "---"
+          Add-Content -Path temp.md -Value "outputFileName: index.html"
+          Add-Content -Path temp.md -Value "---"
+          Get-Content -Path README.md | Add-Content -Path temp.md
+          Move-Item -Path temp.md -Destination README.md -Force
 
       - name: Build documentation
-        run: ./docfx/docfx/docfx docfx.json
+        shell: pwsh
+        run: .\docfx\docfx\docfx.exe docfx.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

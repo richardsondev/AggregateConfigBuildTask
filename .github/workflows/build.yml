@@ -53,8 +53,10 @@ jobs:
 
     - name: Run tests for AggregateConfigBuildTask solution
       run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true
+      id: run_tests
 
     - name: Upload TestResults artifact
+      if: ${{ always() && steps.run_tests.conclusion != 'skipped' }}
       uses: actions/upload-artifact@v4
       with:
         name: TestResults

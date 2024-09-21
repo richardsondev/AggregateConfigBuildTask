@@ -35,7 +35,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             foreach (var invocation in mockLogger.Invocations)
             {
                 var methodName = invocation.Method.Name;
-                var arguments = string.Join(", ", invocation.Arguments);
+                var arguments = string.Join(", ", JsonConvert.SerializeObject(invocation.Arguments));
                 TestContext.WriteLine($"Logger call: {methodName}({arguments})");
             }
         }

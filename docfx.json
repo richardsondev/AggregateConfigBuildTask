@@ -50,7 +50,7 @@
     ],
     "dest": "_site",
     "sitemap": {
-      "baseUrl": "https://richardsondev.github.io/AggregateConfigBuildTask",
+      "baseUrl": "https://docs.richardson.dev/AggregateConfigBuildTask",
       "priority": 0.1,
       "changefreq": "monthly"
     },

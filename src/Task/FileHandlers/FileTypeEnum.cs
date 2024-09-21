@@ -1,4 +1,4 @@
-namespace AggregateConfigBuildTask
+﻿namespace AggregateConfigBuildTask
 {
     /// <summary>
     /// Enum representing different file types supported for merging and processing.
@@ -29,5 +29,10 @@ namespace AggregateConfigBuildTask
         /// Alias for the <see cref="Yml"/> file type, for files with the .yaml extension.
         /// </summary>
         Yaml = Yml,
+
+        /// <summary>
+        /// Represents a TOML (Tom's Obvious, Minimal Language) file type.
+        /// </summary>
+        Toml = 3,
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask
 {
@@ -16,25 +17,18 @@ namespace AggregateConfigBuildTask
         string[] GetFiles(string path, string searchPattern);
 
         /// <summary>
-        /// Reads all lines from the specified file.
-        /// </summary>
-        /// <param name="path">The path of the file to read.</param>
-        /// <returns>A string containing all the lines from the file.</returns>
-        string[] ReadAllLines(string path);
-
-        /// <summary>
         /// Reads all text from the specified file.
         /// </summary>
         /// <param name="path">The path of the file to read.</param>
         /// <returns>A string containing all the text from the file.</returns>
-        string ReadAllText(string path);
+        Task<string> ReadAllTextAsync(string path);
 
         /// <summary>
         /// Writes the specified text to the specified file, overwriting the file if it already exists.
         /// </summary>
         /// <param name="path">The path of the file to write to.</param>
         /// <param name="text">The text to write to the file.</param>
-        void WriteAllText(string path, string text);
+        Task WriteAllTextAsync(string path, string text);
 
         /// <summary>
         /// Checks if the specified file exists at the given path.

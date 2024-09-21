@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask.FileHandlers
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Handles reading and writing ARM template parameter JSON files.
+    /// </summary>
     public class ArmParametersFileHandler : IFileHandler
     {
         private readonly IFileSystem fileSystem;
@@ -51,7 +53,7 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public void WriteOutput(JsonElement? mergedData, string outputPath)
+        public async Task WriteOutput(JsonElement? mergedData, string outputPath)
         {
             if (mergedData.HasValue && mergedData.Value.ValueKind == JsonValueKind.Object)
             {
@@ -76,7 +78,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                     ["parameters"] = parameters
                 };
                 var jsonContent = JsonSerializer.Serialize(armTemplate, jsonOptions);
-                fileSystem.WriteAllText(outputPath, jsonContent);
+                await fileSystem.WriteAllTextAsync(outputPath, jsonContent).ConfigureAwait(false);
             }
             else
             {

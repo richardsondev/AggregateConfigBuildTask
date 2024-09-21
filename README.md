@@ -1,12 +1,9 @@
-﻿---
-outputFileName: index.html
----
-# Aggregate Config Build Task
+﻿# Aggregate Config Build Task
 
 [![NuGet Version](https://img.shields.io/nuget/v/AggregateConfigBuildTask)](https://www.nuget.org/packages/AggregateConfigBuildTask) [![GitHub Build Status](https://img.shields.io/github/actions/workflow/status/richardsondev/AggregateConfigBuildTask/build.yml?branch=main
 )](https://github.com/richardsondev/AggregateConfigBuildTask/actions/workflows/build.yml?query=branch%3Amain)
 
-**AggregateConfigBuildTask** is an MSBuild task that aggregates and transforms configuration files into more consumable formats like JSON, Azure ARM template parameters, YAML during the build process.
+**AggregateConfigBuildTask** is a cross-platform MSBuild task that aggregates and transforms configuration files into more consumable formats like JSON, Azure ARM template parameters, YAML during the build process.
 
 ## Features
 

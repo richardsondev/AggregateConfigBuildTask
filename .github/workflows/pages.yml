@@ -30,21 +30,17 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Setup DocFX
-        uses: crazy-max/ghaction-chocolatey@v1
-        with:
-          args: install docfx
-  
+        run: sudo apt-get install -y docfx
+
       - name: Download material.zip
-        run: Invoke-WebRequest -Uri https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -OutFile material.zip
-        shell: pwsh
-  
+        run: wget https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -O material.zip
+
       - name: Extract material.zip
-        run: Expand-Archive -Path material.zip -DestinationPath ./material
-        shell: pwsh
-  
+        run: unzip material.zip -d ./material
+
       - name: Build documentation
         run: docfx docfx.json
-  
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

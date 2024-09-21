@@ -16,9 +16,9 @@
     <PropertyGroup>
         <PackageId>AggregateConfigBuildTask</PackageId>
         <Version Condition=" '$(Version)' == '' ">0.0.1</Version>
-        <Authors>richardsondev</Authors>
+        <Authors>Billy Richardson</Authors>
         <Owner>richardsondev</Owner>
-        <Company>richardsondev</Company>
+        <Company>https://richardson.software</Company>
         <Description>Merges configuration files at build time, allowing them to be embedded as resources for streamlined deployment and access.</Description>
         <PackageTags>yaml, json, arm, build, configuration, msbuild</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -53,11 +53,9 @@
         <None Include="$(OutputPath)/Microsoft.Bcl.AsyncInterfaces.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="$(OutputPath)/System.Text.Json.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="$(OutputPath)/YamlDotNet.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
-        <None Include="$(PkgYamlDotNet)/LICENSE.txt" Pack="true" PackagePath="/licenses/YamlDotNet">
-            <Link>licenses/YamlDotNet/LICENSE.txt</Link>
-        </None>
         <None Include="$(OutputPath)/YamlDotNet.System.Text.Json.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="build/AggregateConfigBuildTask.targets" Pack="true" PackagePath="/build/AggregateConfigBuildTask.targets" />
+        <None Include="../ThirdPartyNotices.txt" Pack="true" PackagePath="/" />
         <None Include="../../LICENSE" Pack="true" PackagePath="/licenses/">
             <Link>licenses/LICENSE</Link>
         </None>

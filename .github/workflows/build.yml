@@ -11,6 +11,9 @@ on:
       - main
   workflow_dispatch:
 
+  schedule:
+    - cron: "0 2 15-21 * 3"  # Runs at 02:00 UTC on the 3rd Wednesday of every month
+
 jobs:
   build:
     runs-on: windows-latest

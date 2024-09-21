@@ -1,0 +1,82 @@
+name: Deploy content to Pages
+
+on:
+  push:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+  schedule:
+    - cron: "0 2 15-21 * 3"  # Runs at 02:00 UTC on the 3rd Wednesday of every month
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      #url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Download DocFX
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.77.0/docfx-win-x64-v2.77.0.zip -OutFile docfx.zip
+
+      - name: Extract DocFX
+        shell: pwsh
+        run: |
+          Expand-Archive -Path docfx.zip -DestinationPath ./docfx
+
+      - name: Download material.zip
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -OutFile material.zip
+
+      - name: Extract material.zip
+        shell: pwsh
+        run: |
+          Expand-Archive -Path material.zip -DestinationPath ./
+
+      - name: Add header to README.md
+        shell: pwsh
+        run: |
+          Add-Content -Path temp.md -Value "---"
+          Add-Content -Path temp.md -Value "outputFileName: index.html"
+          Add-Content -Path temp.md -Value "---"
+          Get-Content -Path README.md | Add-Content -Path temp.md
+          Move-Item -Path temp.md -Destination README.md -Force
+
+      - name: Build documentation
+        shell: pwsh
+        run: .\docfx\docfx.exe docfx.json
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Documentation
+          path: |
+            ./_site
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,7 +1,6 @@
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("AggregateConfig.Tests.Unit")]
+[assembly: Parallelize(Scope = ExecutionScope.MethodLevel)]
 
 [assembly: AssemblyMetadata("Copyright", "2024")]
 [assembly: AssemblyMetadata("Author", "Billy Richardson")]

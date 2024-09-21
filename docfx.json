@@ -1,0 +1,66 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": [
+            "src/**/*.csproj",
+            "images/icon/*"
+          ],
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**"
+          ]
+        }
+      ],
+      "dest": "./docs"
+    }
+  ],
+  "build": {
+    "globalMetadata": {
+      "_appTitle": "Aggregate Config Build Task",
+      "_appName": "AggregateConfigBuildTask",
+      "_enableSearch": "true",
+      "_appLogoPath": "image/icon/icon_50.png",
+      "_appFaviconPath": "image/icon/favicon.ico",
+      "_enableNewTab": "true",
+      "_disableContribution": "false",
+      "includePrivateMembers": "true",
+      "_appFooter": "<span>Copyright &copy; 2024 <a href=\"https://github.com/richardsondev\">Billy Richardson</a>. Generated with <a href=\"https://dotnet.github.io/docfx\">DocFX</a></span>"
+    },
+    "resource": [
+      {
+        "files": [
+          "image/**"
+        ]
+      }
+    ],
+    "content": [
+      {
+        "files": "docs/*.yml",
+        "dest": "./"
+      },
+      {
+        "files": [
+          "README.md",
+          "toc.yml"
+        ],
+        "dest": "./"
+      }
+    ],
+    "dest": "_site",
+    "sitemap": {
+      "baseUrl": "https://richardsondev.github.io/AggregateConfigBuildTask",
+      "priority": 0.1,
+      "changefreq": "monthly"
+    },
+    "postProcessors": [
+      "ExtractSearchIndex"
+    ],
+    "template": [
+      "statictoc",
+      "modern",
+      "material"
+    ]
+  }
+}

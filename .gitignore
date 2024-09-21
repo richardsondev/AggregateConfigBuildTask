@@ -4,3 +4,6 @@
 **/.vs/**
 *.nupkg
 output*.json
+_site/
+docs/
+src/.manifest

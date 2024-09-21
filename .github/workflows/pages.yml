@@ -6,6 +6,9 @@ on:
 
   workflow_dispatch:
 
+  schedule:
+    - cron: "0 2 15-21 * 3"  # Runs at 02:00 UTC on the 3rd Wednesday of every month
+
 permissions:
   contents: read
   pages: write
@@ -60,7 +63,7 @@ jobs:
 
       - name: Build documentation
         shell: pwsh
-        run: .\docfx\docfx\docfx.exe docfx.json
+        run: .\docfx\docfx.exe docfx.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

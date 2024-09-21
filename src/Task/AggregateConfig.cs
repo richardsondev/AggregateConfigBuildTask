@@ -1,9 +1,9 @@
-﻿using AggregateConfigBuildTask.FileHandlers;
-using Microsoft.Build.Framework;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using AggregateConfigBuildTask.FileHandlers;
+using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
 
 [assembly: InternalsVisibleTo("AggregateConfig.Tests.UnitTests")]
@@ -49,7 +49,7 @@ namespace AggregateConfigBuildTask
         /// <summary>
         /// An array of additional properties that can be included in the output. These are user-specified key-value pairs.
         /// </summary>
-        public string[] AdditionalProperties { get; set; }
+        public ITaskItem[] AdditionalProperties { get; set; }
 
         /// <summary>
         /// Gets or sets whether quiet mode is enabled. When enabled, the logger will suppress non-critical messages.
@@ -91,6 +91,7 @@ namespace AggregateConfigBuildTask
             {
                 EmitHeader();
 
+                InputDirectory = Path.GetFullPath(InputDirectory);
                 OutputFile = Path.GetFullPath(OutputFile);
 
                 if (!Enum.TryParse(OutputType, true, out FileType outputType) ||

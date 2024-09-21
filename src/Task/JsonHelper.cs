@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Build.Framework;
 
 namespace AggregateConfigBuildTask
 {
@@ -63,12 +64,13 @@ namespace AggregateConfigBuildTask
         }
 
         /// <summary>
-        /// Parses an array of key-value pairs provided as strings in the format "key=value".
+        /// Parses an array of key-value pairs from an <see cref="ITaskItem"/> array.
+        /// Prioritizes the 'Value' metadata when provided. Falls back to legacy format "key=value" if no 'Value' is present.
         /// Supports escaping of the '=' sign using '\='.
         /// </summary>
-        /// <param name="properties">An array of key-value pairs in the form "key=value".</param>
+        /// <param name="properties">An array of key-value pairs in the form of ITaskItem[] or legacy format strings.</param>
         /// <returns>A dictionary containing the parsed key-value pairs.</returns>
-        public static Dictionary<string, string> ParseAdditionalProperties(string[] properties)
+        public static Dictionary<string, string> ParseAdditionalProperties(ITaskItem[] properties)
         {
             var additionalPropertiesDict = new Dictionary<string, string>();
             const string unicodeEscape = "\u001F";
@@ -78,8 +80,19 @@ namespace AggregateConfigBuildTask
             {
                 foreach (var property in properties)
                 {
-                    var sanitizedProperty = property.Replace(@"\=", unicodeEscape);
+                    // Check if the new 'Value' metadata is present
+                    string key = property.ItemSpec;
+                    string value = property.GetMetadata("Value");
 
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        // Use the new method if the 'Value' metadata is provided
+                        additionalPropertiesDict[key] = value;
+                        continue;
+                    }
+
+                    // Fallback to legacy parsing if no 'Value' metadata is provided and key contains '='
+                    var sanitizedProperty = key.Replace(@"\=", unicodeEscape);
                     var keyValue = sanitizedProperty.Split(split, 2);
 
                     if (keyValue.Length == 2)
@@ -88,6 +101,7 @@ namespace AggregateConfigBuildTask
                     }
                 }
             }
+
             return additionalPropertiesDict;
         }
 

@@ -1,15 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Microsoft.Build.Framework;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace AggregateConfigBuildTask.Tests.Unit
 {
-    public class TaskTestBase
+    public abstract class TaskTestBase
     {
         private string testPath;
         private readonly StringComparison comparison = StringComparison.OrdinalIgnoreCase;
@@ -17,12 +17,25 @@ namespace AggregateConfigBuildTask.Tests.Unit
         private Mock<ITaskLogger> mockLogger;
         internal IFileSystem virtualFileSystem;
 
+        public TestContext TestContext { get; set; }
+
         public void TestInitialize(bool isWindowsMode, string testPath)
         {
             this.testPath = testPath;
             this.mockLogger = new Mock<ITaskLogger> { DefaultValue = DefaultValue.Mock };
             this.virtualFileSystem = new VirtualFileSystem(isWindowsMode);
             this.virtualFileSystem.CreateDirectory(testPath);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            foreach (var invocation in mockLogger.Invocations)
+            {
+                var methodName = invocation.Method.Name;
+                var arguments = string.Join(", ", invocation.Arguments);
+                TestContext.WriteLine($"Logger call: {methodName}({arguments})");
+            }
         }
 
         [TestMethod]
@@ -176,7 +189,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that additional properties are correctly added to the top level in JSON output.")]
-        public void ShouldIncludeAdditionalPropertiesInJson()
+        [DataRow(true, DisplayName = "Legacy properties")]
+        [DataRow(false, DisplayName = "Modern properties")]
+        public void ShouldIncludeAdditionalPropertiesInJson(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample YAML data.
             virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
@@ -194,7 +209,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment\\=Key", "Prod\\=West" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                }.CreateTaskItems(useLegacyAdditionalProperties),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -206,12 +221,22 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.AreEqual("TestRG", json["Group"]);
-            Assert.AreEqual("Prod=West", json["Environment=Key"]);
+
+            if (useLegacyAdditionalProperties)
+            {
+                Assert.AreEqual("Prod=West", json["Environment=Key"]);
+            }
+            else
+            {
+                Assert.AreEqual("Prod\\=West", json["Environment\\=Key"]);
+            }
         }
 
         [TestMethod]
         [Description("Test that additional properties are correctly added to the ARM parameters output.")]
-        public void ShouldIncludeAdditionalPropertiesInArmParameters()
+        [DataRow(true, DisplayName = "Legacy properties")]
+        [DataRow(false, DisplayName = "Modern properties")]
+        public void ShouldIncludeAdditionalPropertiesInArmParameters(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample YAML data.
             virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
@@ -229,7 +254,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                }.CreateTaskItems(useLegacyAdditionalProperties),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -327,7 +352,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that additional properties are correctly added to the ARM parameters output from JSON input.")]
-        public void ShouldIncludeAdditionalPropertiesInJsonInput()
+        [DataRow(true, DisplayName = "Legacy properties")]
+        [DataRow(false, DisplayName = "Modern properties")]
+        public void ShouldIncludeAdditionalPropertiesInJsonInput(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample JSON data.
             virtualFileSystem.WriteAllText($"{testPath}\\file1.json", """
@@ -353,7 +380,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                }.CreateTaskItems(useLegacyAdditionalProperties),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 
@@ -375,7 +402,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that ARM parameters are correctly processed and additional properties are included in the output.")]
-        public void ShouldIncludeAdditionalPropertiesInArmParameterFile()
+        [DataRow(true, DisplayName = "Legacy properties")]
+        [DataRow(false, DisplayName = "Modern properties")]
+        public void ShouldIncludeAdditionalPropertiesInArmParameterFile(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
             virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", """
@@ -406,7 +435,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 {
                     { "Group", "TestRG" },
                     { "Environment", "'Prod'" }
-                }.Select(q => $"{q.Key}={q.Value}").ToArray(),
+                }.CreateTaskItems(useLegacyAdditionalProperties),
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
 

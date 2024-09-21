@@ -35,7 +35,7 @@ jobs:
       - name: Download DocFX
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile docfx.zip
+          Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.77.0/docfx-win-x64-v2.77.0.zip -OutFile docfx.zip
 
       - name: Extract DocFX
         shell: pwsh
@@ -50,7 +50,7 @@ jobs:
       - name: Extract material.zip
         shell: pwsh
         run: |
-          Expand-Archive -Path material.zip -DestinationPath ./material
+          Expand-Archive -Path material.zip -DestinationPath ./
 
       - name: Add header to README.md
         shell: pwsh

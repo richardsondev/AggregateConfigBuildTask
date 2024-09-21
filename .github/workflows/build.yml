@@ -59,29 +59,6 @@ jobs:
           src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
           src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.snupkg
 
-    - name: Setup DocFX
-      uses: crazy-max/ghaction-chocolatey@v1
-      with:
-        args: install docfx
-
-    - name: Download material.zip
-      run: Invoke-WebRequest -Uri https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -OutFile material.zip
-      shell: pwsh
-
-    - name: Extract material.zip
-      run: Expand-Archive -Path material.zip -DestinationPath ./material
-      shell: pwsh
-
-    - name: Build documentation
-      run: docfx docfx.json
-
-    - name: Upload documentation
-      uses: actions/upload-artifact@v4
-      with:
-        name: Documentation
-        path: |
-          _site/
-
   integration_tests:
     needs: build
     strategy:

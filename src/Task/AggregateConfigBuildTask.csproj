@@ -16,9 +16,9 @@
     <PropertyGroup>
         <PackageId>AggregateConfigBuildTask</PackageId>
         <Version Condition=" '$(Version)' == '' ">0.0.1</Version>
-        <Authors>richardsondev</Authors>
+        <Authors>Billy Richardson</Authors>
         <Owner>richardsondev</Owner>
-        <Company>richardsondev</Company>
+        <Company>https://richardson.software</Company>
         <Description>Merges configuration files at build time, allowing them to be embedded as resources for streamlined deployment and access.</Description>
         <PackageTags>yaml, json, arm, build, configuration, msbuild</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

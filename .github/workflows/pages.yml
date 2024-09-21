@@ -1,0 +1,62 @@
+name: Deploy content to Pages
+
+on:
+  push:
+    branches: ["main", "docfx"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      #url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Setup DocFX
+        uses: crazy-max/ghaction-chocolatey@v1
+        with:
+          args: install docfx
+  
+      - name: Download material.zip
+        run: Invoke-WebRequest -Uri https://github.com/ovasquez/docfx-material/releases/download/1.0.0/material.zip -OutFile material.zip
+        shell: pwsh
+  
+      - name: Extract material.zip
+        run: Expand-Archive -Path material.zip -DestinationPath ./material
+        shell: pwsh
+  
+      - name: Build documentation
+        run: docfx docfx.json
+  
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Documentation
+          path: |
+            .
+  
+      #- name: Upload to Pages
+      #  uses: actions/upload-pages-artifact@v3
+      #  with:
+      #    path: '_site/'
+
+      #- name: Deploy to GitHub Pages
+      #  id: deployment
+      #  uses: actions/deploy-pages@v4

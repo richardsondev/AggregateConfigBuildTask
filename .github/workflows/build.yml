@@ -46,6 +46,8 @@ jobs:
             $VERSION = "0.0.1-$COMMIT_HASH"
         }
 
+        Write-Output "Version is $VERSION"
+
         echo "VERSION=$VERSION" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 

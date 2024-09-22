@@ -47,7 +47,7 @@ namespace AggregateConfigBuildTask.FileHandlers
         /// <param name="mergedData">The JSON data to be written as TOML.</param>
         /// <param name="outputPath">The path where the TOML file should be written.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided JSON data is null.</exception>
-        public Task WriteOutput(JsonElement? mergedData, string outputPath)
+        public async Task WriteOutput(JsonElement? mergedData, string outputPath)
         {
             if (mergedData == null)
             {
@@ -61,10 +61,11 @@ namespace AggregateConfigBuildTask.FileHandlers
             using (var writer = new StringWriter())
             {
                 tomlTable.WriteTo(writer);
+                await writer.FlushAsync().ConfigureAwait(false);
                 tomlString = writer.ToString();
             }
 
-            return fileSystem.WriteAllTextAsync(outputPath, tomlString);
+            await fileSystem.WriteAllTextAsync(outputPath, tomlString).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -219,7 +220,11 @@ namespace AggregateConfigBuildTask.FileHandlers
                     table[property.Name] = subTable;
                     break;
                 case JsonValueKind.Array:
-                    var tomlArray = new TomlArray();
+                    var tomlArray = new TomlArray
+                    {
+                        IsTableArray = true
+                    };
+
                     foreach (JsonElement item in property.Value.EnumerateArray())
                     {
                         tomlArray.Add(ConvertJsonElementToToml(item));

@@ -557,7 +557,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [DynamicData(nameof(GetFileTypeConversions), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
-        [Description("Test that files are correctly translated between ARM, JSON, YAML, and TOML.")]
+        [Description("Test that files are correctly translated between all supported FileTypes.")]
         public async Task ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps, string _)
         {
             Assert.IsTrue(steps?.Length > 0);
@@ -606,10 +606,11 @@ namespace AggregateConfigBuildTask.Tests.Unit
         public static IEnumerable<object[]> GetFileTypeConversions()
         {
             var fileTypes = Enum.GetValues(typeof(FileType)).Cast<FileType>().Select(ft => ft.ToString().ToUpperInvariant()).ToArray();
+            var permutationCount = Enum.GetNames(typeof(FileType)).DistinctBy(Enum.Parse<FileType>).Count() - 1;
 
             foreach (var initialFormat in fileTypes)
             {
-                foreach (var permutation in GetPermutations(fileTypes.Where(ft => ft != initialFormat), 3))
+                foreach (var permutation in GetPermutations(fileTypes.Where(ft => ft != initialFormat), permutationCount))
                 {
                     var displayName = $"{initialFormat.ToUpperInvariant()} -> {string.Join(" -> ", permutation.Select(p => p.ToUpperInvariant()))} -> {initialFormat.ToUpperInvariant()}";
                     yield return new object[] { initialFormat, permutation.ToArray(), displayName };
@@ -628,7 +629,11 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         private static IEnumerable<IEnumerable<string>> GetPermutations(IEnumerable<string> list, int length)
         {
-            if (length == 1) return list.Select(t => new[] { t });
+            if (length == 1)
+            {
+                return list.Select(t => new[] { t });
+            }
+
             return GetPermutations(list, length - 1)
                 .SelectMany(t => list.Where(e => !t.Contains(e)),
                             (t1, t2) => t1.Concat([t2]));

@@ -38,25 +38,27 @@ namespace AggregateConfigBuildTask.Tests.Unit
   "contentVersion": "1.0.0.0",
   "parameters": {
     "options": {
-      "type": "object",
-      "value": {
-        "name": "Option 1",
-        "description": "First option",
-        "isTrue": true,
-        "number": 100,
-        "nested": [
-          {
-            "name": "Nested option 1",
-            "description": "Nested first option",
-            "isTrue": true,
-            "number": 1002
-          },
-          {
-            "name": "Nested option 2",
-            "description": "Nested second option"
-          }
-        ]
-      }
+      "type": "array",
+      "value": [
+        {
+          "name": "Option 1",
+          "description": "First option",
+          "isTrue": true,
+          "number": 100,
+          "nested": [
+            {
+              "name": "Nested option 1",
+              "description": "Nested first option",
+              "isTrue": true,
+              "number": 1002
+            },
+            {
+              "name": "Nested option 2",
+              "description": "Nested second option"
+            }
+          ]
+        }
+      ]
     }
   }
 }
@@ -90,6 +92,7 @@ number = 1004
 [[options.nested]]
 name = "Nested option 2"
 description = "Nested second option"
+
 """,
                 _ => throw new InvalidOperationException($"Unknown type: {type}")
             };

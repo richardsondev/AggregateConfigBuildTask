@@ -106,9 +106,28 @@ namespace AggregateConfigBuildTask.FileHandlers
         {
             TomlTable tomlTable = new TomlTable();
 
-            foreach (JsonProperty property in jsonElement.EnumerateObject())
+            // Check if the JsonElement is an object
+            if (jsonElement.ValueKind == JsonValueKind.Object)
             {
-                AddJsonPropertyToTomlTable(tomlTable, property);
+                foreach (JsonProperty property in jsonElement.EnumerateObject())
+                {
+                    AddJsonPropertyToTomlTable(tomlTable, property);
+                }
+            }
+            // Handle array case
+            else if (jsonElement.ValueKind == JsonValueKind.Array)
+            {
+                var tomlArray = new TomlArray();
+                foreach (JsonElement element in jsonElement.EnumerateArray())
+                {
+                    tomlArray.Add(ConvertJsonElementToTomlValue(element));
+                }
+                return new TomlTable { ["array"] = tomlArray };
+            }
+            else
+            {
+                // For simple types, add them as a direct value
+                tomlTable["value"] = ConvertJsonElementToTomlValue(jsonElement);
             }
 
             return tomlTable;
@@ -250,6 +269,46 @@ namespace AggregateConfigBuildTask.FileHandlers
                     break;
                 default:
                     throw new InvalidOperationException($"Unsupported JSON value type: {property.Value.ValueKind}");
+            }
+        }
+
+        /// <summary>
+        /// Converts a <see cref="JsonElement"/> value to the appropriate TOML node.
+        /// </summary>
+        /// <param name="jsonElement">The JSON element to be converted.</param>
+        /// <returns>A TOML node.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the JSON element contains unsupported number format or type.</exception>
+        private TomlNode ConvertJsonElementToTomlValue(JsonElement jsonElement)
+        {
+            switch (jsonElement.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return new TomlString { Value = jsonElement.GetString() };
+                case JsonValueKind.Number:
+                    if (jsonElement.TryGetInt32(out int intValue))
+                    {
+                        return new TomlInteger { Value = intValue };
+                    }
+                    if (jsonElement.TryGetDouble(out double doubleValue))
+                    {
+                        return new TomlFloat { Value = doubleValue };
+                    }
+                    throw new InvalidOperationException("Unsupported number format.");
+                case JsonValueKind.True:
+                    return new TomlBoolean { Value = true };
+                case JsonValueKind.False:
+                    return new TomlBoolean { Value = false };
+                case JsonValueKind.Object:
+                    return ConvertJsonElementToToml(jsonElement);
+                case JsonValueKind.Array:
+                    var tomlArray = new TomlArray();
+                    foreach (JsonElement element in jsonElement.EnumerateArray())
+                    {
+                        tomlArray.Add(ConvertJsonElementToTomlValue(element));
+                    }
+                    return tomlArray;
+                default:
+                    throw new InvalidOperationException($"Unsupported JsonElement type: {jsonElement.ValueKind}");
             }
         }
     }

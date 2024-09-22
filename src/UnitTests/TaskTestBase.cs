@@ -114,10 +114,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that the source property is correctly added when AddSourceProperty is true.")]
-        public async Task ShouldAddSourceProperty()
+        [DynamicData(nameof(GetFileTypes), DynamicDataSourceType.Method)]
+        public async Task ShouldAddSourceProperty(FileType outputType)
         {
             // Arrange: Prepare sample YAML data with source property enabled.
-            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
+            Guid outputFileName = Guid.NewGuid();
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\{outputFileName}.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'").ConfigureAwait(false);
@@ -126,8 +128,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
-                OutputFile = testPath + @"\output.json",
-                OutputType = nameof(FileType.Json),
+                OutputFile = testPath + $@"\output.{(outputType == FileType.Arm ? "json" : outputType)}",
+                OutputType = outputType.ToString().ToUpperInvariant(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -137,10 +139,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
-            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
-            var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, string>>>>(output);
-            Assert.IsTrue(json["options"][0].ContainsKey("source"));
-            Assert.AreEqual("file1", json["options"][0]["source"]);
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.{(outputType == FileType.Arm ? "json" : outputType)}").ConfigureAwait(false);
+            StringAssert.Contains(output, outputFileName.ToString(), StringComparison.InvariantCulture);
         }
 
         [TestMethod]
@@ -556,8 +556,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         [TestMethod]
-        [DynamicData(nameof(GetFileTypeConversions), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
         [Description("Test that files are correctly translated between all supported FileTypes.")]
+        [DynamicData(nameof(GetFileTypeConversions), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
         public async Task ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps, string _)
         {
             Assert.IsTrue(steps?.Length > 0);
@@ -601,6 +601,14 @@ namespace AggregateConfigBuildTask.Tests.Unit
             string originalInput = await virtualFileSystem.ReadAllTextAsync(inputFilePath).ConfigureAwait(false);
             string finalOutput = await virtualFileSystem.ReadAllTextAsync(finalOutputPath).ConfigureAwait(false);
             Assert.AreEqual(originalInput, finalOutput, $"Data mismatch after full conversion cycle for {inputType}");
+        }
+
+        public static IEnumerable<object[]> GetFileTypes()
+        {
+            foreach (var type in Enum.GetValues(typeof(FileType)).Cast<FileType>())
+            {
+                yield return new object[] { type };
+            }
         }
 
         public static IEnumerable<object[]> GetFileTypeConversions()

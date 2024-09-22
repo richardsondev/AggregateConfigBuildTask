@@ -28,32 +28,6 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc />
-        public void LogError(
-            string subcategory = null,
-            string errorCode = null,
-            string helpKeyword = null,
-            string file = null,
-            int lineNumber = 0,
-            int columnNumber = 0,
-            int endLineNumber = 0,
-            int endColumnNumber = 0,
-            string message = null,
-            params object[] messageArgs)
-        {
-            Log.LogError(
-                subcategory,
-                errorCode,
-                helpKeyword,
-                file,
-                lineNumber,
-                columnNumber,
-                endLineNumber,
-                endColumnNumber,
-                message,
-                messageArgs);
-        }
-
-        /// <inheritdoc />
         public void LogErrorFromException(Exception exception,
             bool showStackTrace = false,
             bool showDetail = false,
@@ -66,32 +40,6 @@ namespace AggregateConfigBuildTask
         public void LogWarning(string message = null, params object[] messageArgs)
         {
             Log.LogWarning(message, messageArgs);
-        }
-
-        /// <inheritdoc />
-        public void LogWarning(
-            string subcategory = null,
-            string warningCode = null,
-            string helpKeyword = null,
-            string file = null,
-            int lineNumber = 0,
-            int columnNumber = 0,
-            int endLineNumber = 0,
-            int endColumnNumber = 0,
-            string message = null,
-            params object[] messageArgs)
-        {
-            Log.LogWarning(
-                subcategory,
-                warningCode,
-                helpKeyword,
-                file,
-                lineNumber,
-                columnNumber,
-                endLineNumber,
-                endColumnNumber,
-                message,
-                messageArgs);
         }
 
         /// <inheritdoc />

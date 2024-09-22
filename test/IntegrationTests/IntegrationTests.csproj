@@ -43,6 +43,13 @@
             OutputType="Yaml"
             AddSourceProperty="true" />
 
+        <!-- Run the AggregateConfig to generate the output.toml -->
+        <AggregateConfig
+            InputDirectory="Configs"
+            OutputFile="$(MSBuildProjectDirectory)\out\toml\test.toml"
+            OutputType="Toml"
+            AddSourceProperty="true" />
+
         <!-- Run the AggregateConfig to generate the output.parameters.json -->
         <ItemGroup>
             <!-- Existing legacy format properties -->

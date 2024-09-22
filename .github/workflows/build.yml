@@ -49,14 +49,14 @@ jobs:
         Write-Output "Version is $VERSION"
 
         echo "VERSION=$VERSION" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
 
     - name: Build AggregateConfigBuildTask solution in Release mode
       run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ env.VERSION }}
 
     - name: Run tests for AggregateConfigBuildTask solution
-      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ env.VERSION }} -p:CollectCoverage=true
       id: run_tests
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ env.VERSION }} -p:CollectCoverage=true
 
     - name: Upload TestResults artifact
       if: ${{ always() && steps.run_tests.conclusion != 'skipped' }}

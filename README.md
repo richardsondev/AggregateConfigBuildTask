@@ -334,7 +334,7 @@ public class AppConfig
 You can now load and use the configuration data as follows:
 
 ```csharp
-var applicationConfig = LoadFromEmbeddedResource<AppConfig>("YourAssemblyName.output.json");
+var applicationConfig = LoadFromEmbeddedResource<AppConfig>("YourAssemblyName.out.output.json");
 
 bool enabled = applicationConfig.Enabled; 
 Console.WriteLine($"Enabled: {enabled}"); // Outputs "True"
@@ -343,7 +343,7 @@ string environment = applicationConfig.Environment;
 Console.WriteLine($"Environment: {environment}"); // Outputs "Production"
 ```
 
-**Note:** Replace `"YourAssemblyName.output.json"` with the actual resource name, which typically includes the assembly name and the output file name.
+**Note:** Replace `"YourAssemblyName.out.output.json"` with the actual resource name, which typically includes the assembly name, output folder, and the output file name.
 
 ### Finding the Correct Resource Name
 

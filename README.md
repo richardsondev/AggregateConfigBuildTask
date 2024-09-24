@@ -334,7 +334,7 @@ public class AppConfig
 You can now load and use the configuration data as follows:
 
 ```csharp
-var applicationConfig = LoadFromEmbeddedResource<AppConfig>("YourAssemblyName.output.json");
+var applicationConfig = LoadFromEmbeddedResource<AppConfig>("YourAssemblyName.out.output.json");
 
 bool enabled = applicationConfig.Enabled; 
 Console.WriteLine($"Enabled: {enabled}"); // Outputs "True"

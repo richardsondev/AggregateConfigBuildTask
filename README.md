@@ -343,7 +343,7 @@ string environment = applicationConfig.Environment;
 Console.WriteLine($"Environment: {environment}"); // Outputs "Production"
 ```
 
-**Note:** Replace `"YourAssemblyName.output.json"` with the actual resource name, which typically includes the assembly name and the output file name.
+**Note:** Replace `"YourAssemblyName.out.output.json"` with the actual resource name, which typically includes the assembly name, output folder, and the output file name.
 
 ### Finding the Correct Resource Name
 

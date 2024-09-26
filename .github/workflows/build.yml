@@ -46,21 +46,32 @@ jobs:
             $VERSION = "0.0.1-$COMMIT_HASH"
         }
 
-        Write-Output "::set-output name=VERSION::$VERSION"
+        Write-Output "Version is $VERSION"
+
+        echo "VERSION=$VERSION" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
 
     - name: Build AggregateConfigBuildTask solution in Release mode
-      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
+      run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ env.VERSION }}
 
     - name: Run tests for AggregateConfigBuildTask solution
-      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true
+      id: run_tests
+      run: dotnet test src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ env.VERSION }} -p:CollectCoverage=true
+
+    - name: Upload TestResults artifact
+      if: ${{ always() && steps.run_tests.conclusion != 'skipped' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestResults
+        path: src\UnitTests\TestResults
 
     - name: Upload NuGetPackage artifact
       uses: actions/upload-artifact@v4
       with:
         name: NuGetPackage
         path: |
-          src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.nupkg
-          src/Task/bin/Release/AggregateConfigBuildTask.${{ steps.get_version.outputs.VERSION }}.snupkg
+          src/Task/bin/Release/AggregateConfigBuildTask.${{ env.VERSION }}.nupkg
+          src/Task/bin/Release/AggregateConfigBuildTask.${{ env.VERSION }}.snupkg
 
   integration_tests:
     needs: build

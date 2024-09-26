@@ -1,12 +1,12 @@
-﻿using AggregateConfigBuildTask.FileHandlers;
-using Microsoft.Build.Framework;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AggregateConfigBuildTask.FileHandlers;
+using Microsoft.Build.Framework;
 
 namespace AggregateConfigBuildTask
 {
@@ -29,14 +29,33 @@ namespace AggregateConfigBuildTask
             ITaskLogger log)
         {
             var finalResults = new ConcurrentBag<JsonElement>();
+            IEnumerable<IEnumerable<string>> fileGroups = null;
             JsonElement? finalResult = null;
             bool hasError = false;
 
-            var expectedExtensions = FileHandlerFactory.GetExpectedFileExtensions(inputType);
-            var fileGroups = fileSystem.GetFiles(fileObjectDirectoryPath, "*.*")
-                .Where(file => expectedExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
-                .ToList()
-                .Chunk(100);
+            if (fileSystem.DirectoryExists(fileObjectDirectoryPath))
+            {
+                var expectedExtensions = FileHandlerFactory.GetExpectedFileExtensions(inputType);
+                fileGroups = fileSystem.GetFiles(fileObjectDirectoryPath, "*.*")
+                    .Where(file => expectedExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
+                    .ToList()
+                    .Chunk(100);
+            }
+            else if (fileSystem.FileExists(fileObjectDirectoryPath))
+            {
+                fileGroups = new List<IEnumerable<string>>
+                {
+                    new List<string>
+                    {
+                        fileObjectDirectoryPath
+                    }
+                };
+            }
+            else
+            {
+                log.LogError("The provided path was not found as a directory or file: {0}", fileObjectDirectoryPath);
+                return null;
+            }
 
             await fileGroups.ForEachAsync(Environment.ProcessorCount,
                 async (files) => {

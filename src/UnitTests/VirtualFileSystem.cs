@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask.Tests.Unit
 {
@@ -15,7 +16,6 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         private RegexOptions RegexOptions => isWindowsMode ? RegexOptions.IgnoreCase : RegexOptions.None;
         private StringComparison StringComparison => isWindowsMode ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        private string EnvironmentLineBreak => isWindowsMode ? "\r\n" : "\n";
 
         /// <inheritdoc/>
         public string[] GetFiles(string path, string searchPattern)
@@ -42,29 +42,20 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         /// <inheritdoc/>
-        public string[] ReadAllLines(string path)
-        {
-            path = NormalizePath(path);
-
-            var content = ReadAllText(path);
-            return content.Split(EnvironmentLineBreak);
-        }
-
-        /// <inheritdoc/>
-        public string ReadAllText(string path)
+        public Task<string> ReadAllTextAsync(string path)
         {
             path = NormalizePath(path);
 
             if (fileSystem.TryGetValue(path, out var content))
             {
-                return content;
+                return Task.FromResult(content);
             }
 
             throw new FileNotFoundException($"The file '{path}' was not found in the virtual file system.");
         }
 
         /// <inheritdoc/>
-        public void WriteAllText(string path, string text)
+        public Task WriteAllTextAsync(string path, string text)
         {
             path = NormalizePath(path);
             string directoryPath = Path.GetDirectoryName(path);
@@ -81,6 +72,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
             }
 
             fileSystem[path] = text;
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc/>
@@ -128,13 +121,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
         /// <inheritdoc />
         public TextReader OpenText(string path)
         {
-            return new StringReader(ReadAllText(path));
+            return new StringReader(ReadAllTextAsync(path).GetAwaiter().GetResult());
         }
 
         /// <inheritdoc />
         public Stream OpenRead(string inputPath)
         {
-            var byteArray = Encoding.UTF8.GetBytes(ReadAllText(inputPath));
+            var byteArray = Encoding.UTF8.GetBytes(ReadAllTextAsync(inputPath).GetAwaiter().GetResult());
             return new MemoryStream(byteArray);
         }
 

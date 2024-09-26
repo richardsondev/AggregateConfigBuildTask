@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask.FileHandlers
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Handles reading and writing JSON files.
+    /// </summary>
     public class JsonFileHandler : IFileHandler
     {
         readonly IFileSystem fileSystem;
@@ -25,10 +27,10 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public void WriteOutput(JsonElement? mergedData, string outputPath)
+        public Task WriteOutput(JsonElement? mergedData, string outputPath)
         {
             var jsonContent = JsonSerializer.Serialize(mergedData, jsonOptions);
-            fileSystem.WriteAllText(outputPath, jsonContent);
+            return fileSystem.WriteAllTextAsync(outputPath, jsonContent);
         }
     }
 }

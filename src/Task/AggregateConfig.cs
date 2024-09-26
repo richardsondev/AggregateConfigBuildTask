@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using AggregateConfigBuildTask.FileHandlers;
 using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
@@ -109,30 +110,7 @@ namespace AggregateConfigBuildTask
                     return false;
                 }
 
-                logger.LogMessage(MessageImportance.High, "Aggregating {0} to {1} in folder {2}", inputType, outputType, InputDirectory);
-
-                string directoryPath = Path.GetDirectoryName(OutputFile);
-                if (!fileSystem.DirectoryExists(directoryPath))
-                {
-                    fileSystem.CreateDirectory(directoryPath);
-                }
-
-                var finalResult = ObjectManager.MergeFileObjects(InputDirectory, inputType, AddSourceProperty, fileSystem, logger).GetAwaiter().GetResult();
-
-                if (finalResult == null)
-                {
-                    logger.LogError("No input was found! Check the input directory.");
-                    return false;
-                }
-
-                var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
-                finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, logger).GetAwaiter().GetResult();
-
-                var writer = FileHandlerFactory.GetFileHandlerForType(fileSystem, outputType);
-                writer.WriteOutput(finalResult, OutputFile);
-                logger.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
-
-                return true;
+                return Process(inputType, outputType).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -140,6 +118,34 @@ namespace AggregateConfigBuildTask
                 logger.LogErrorFromException(ex, true, true, null);
                 return false;
             }
+        }
+
+        private async Task<bool> Process(FileType inputType, FileType outputType)
+        {
+            logger.LogMessage(MessageImportance.High, "Aggregating {0} to {1} in folder {2}", inputType, outputType, InputDirectory);
+
+            string directoryPath = Path.GetDirectoryName(OutputFile);
+            if (!fileSystem.DirectoryExists(directoryPath))
+            {
+                fileSystem.CreateDirectory(directoryPath);
+            }
+
+            var finalResult = await ObjectManager.MergeFileObjects(InputDirectory, inputType, AddSourceProperty, fileSystem, logger).ConfigureAwait(false);
+
+            if (finalResult == null)
+            {
+                logger.LogError("No input was found! Check the input directory.");
+                return false;
+            }
+
+            var additionalPropertiesDictionary = JsonHelper.ParseAdditionalProperties(AdditionalProperties);
+            finalResult = await ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, logger).ConfigureAwait(false);
+
+            var writer = FileHandlerFactory.GetFileHandlerForType(fileSystem, outputType);
+            await writer.WriteOutput(finalResult, OutputFile).ConfigureAwait(false);
+            logger.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
+
+            return true;
         }
 
         private void EmitHeader()

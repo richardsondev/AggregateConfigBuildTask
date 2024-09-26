@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace AggregateConfigBuildTask.FileHandlers
@@ -25,6 +25,8 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return new YamlFileHandler(fileSystem);
                 case FileType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
+                case FileType.Toml:
+                    return new TomlFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format");
             }
@@ -46,6 +48,8 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return new List<string> { ".yml", ".yaml" };
                 case FileType.Arm:
                     return new List<string> { ".json" };
+                case FileType.Toml:
+                    return new List<string> { ".toml" };
                 default:
                     throw new ArgumentException("Unsupported input type");
             }

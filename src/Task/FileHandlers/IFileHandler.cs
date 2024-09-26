@@ -21,6 +21,6 @@ namespace AggregateConfigBuildTask.FileHandlers
         /// </summary>
         /// <param name="mergedData">The intermediate data in <see cref="JsonElement"/> format. Can be null.</param>
         /// <param name="outputPath">The path to the output file where the data will be written.</param>
-        void WriteOutput(JsonElement? mergedData, string outputPath);
+        Task WriteOutput(JsonElement? mergedData, string outputPath);
     }
 }

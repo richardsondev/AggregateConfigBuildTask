@@ -7,3 +7,5 @@ output*.json
 _site/
 docs/
 src/.manifest
+src/UnitTests/TestResults
+.vscode

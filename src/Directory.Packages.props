@@ -26,7 +26,7 @@
   <!-- Global packages -->
   <ItemGroup>
     <GlobalPackageReference Include="AsyncFixer" Version="1.6.0" />
-    <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+    <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24454.1" />
     <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.10" />
     <GlobalPackageReference Include="Roslynator.Analyzers" Version="4.12.8" />
   </ItemGroup>

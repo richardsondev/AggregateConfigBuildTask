@@ -4,7 +4,7 @@ THIRD-PARTY SOFTWARE NOTICES AND INFORMATION
 AggregateConfigBuildTask is based on or incorporates material from the projects listed below.
 
 1. YamlDotNet (https://github.com/aaubry/YamlDotNet)
-2. YamlDotNet.System.Text.Json (https://github.com/adamabdelhamed/PowerArgs)
+2. YamlDotNet.System.Text.Json (https://github.com/IvanJosipovic/YamlDotNet.System.Text.Json)
 
 
 %% YamlDotNet NOTICES AND INFORMATION BEGIN HERE

@@ -46,7 +46,7 @@ jobs:
             $VERSION = "0.0.1-$COMMIT_HASH"
         }
 
-        Write-Output "::set-output name=VERSION::$VERSION"
+        "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
     - name: Build AggregateConfigBuildTask solution in Release mode
       run: dotnet build src/AggregateConfigBuildTask.sln --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}

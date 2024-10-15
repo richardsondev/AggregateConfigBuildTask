@@ -28,6 +28,12 @@ jobs:
       with:
         fetch-depth: 1
 
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        dotnet-quality: 'preview'
+
     - name: Set version
       id: get_version
       shell: pwsh
@@ -79,7 +85,8 @@ jobs:
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '9.0.x'
+        dotnet-quality: 'preview'
 
     - name: Download NuGetPackage artifact
       uses: actions/download-artifact@v4

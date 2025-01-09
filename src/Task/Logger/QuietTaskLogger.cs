@@ -24,35 +24,9 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc />
-        public void LogError(string message = null, params object[] messageArgs)
+        public void LogError(string message, params object[] messageArgs)
         {
-            Log.LogError(message, messageArgs);
-        }
-
-        /// <inheritdoc />
-        public void LogError(
-            string subcategory = null,
-            string errorCode = null,
-            string helpKeyword = null,
-            string file = null,
-            int lineNumber = 0,
-            int columnNumber = 0,
-            int endLineNumber = 0,
-            int endColumnNumber = 0,
-            string message = null,
-            params object[] messageArgs)
-        {
-            Log.LogError(
-                subcategory,
-                errorCode,
-                helpKeyword,
-                file,
-                lineNumber,
-                columnNumber,
-                endLineNumber,
-                endColumnNumber,
-                message,
-                messageArgs);
+            Log.LogError(message ?? "Unknown Error", messageArgs);
         }
 
         /// <inheritdoc />

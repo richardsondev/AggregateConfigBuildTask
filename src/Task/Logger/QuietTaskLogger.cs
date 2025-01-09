@@ -51,7 +51,7 @@ namespace AggregateConfigBuildTask
                 columnNumber,
                 endLineNumber,
                 endColumnNumber,
-                message,
+                message ?? "Unknown Error",
                 messageArgs);
         }
 

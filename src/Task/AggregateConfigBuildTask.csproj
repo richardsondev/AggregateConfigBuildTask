@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
@@ -44,6 +44,8 @@
     <!-- Runtime packages -->
     <ItemGroup>
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" PrivateAssets="all" />
+        <PackageReference Include="System.IO.Pipelines" PrivateAssets="all" />
+        <PackageReference Include="System.Text.Encodings.Web" PrivateAssets="all" />
         <PackageReference Include="System.Text.Json" PrivateAssets="all" />
         <PackageReference Include="YamlDotNet" PrivateAssets="all" GeneratePathProperty="true" />
         <PackageReference Include="YamlDotNet.System.Text.Json" PrivateAssets="all" />
@@ -51,6 +53,8 @@
 
     <ItemGroup>
         <None Include="$(OutputPath)/Microsoft.Bcl.AsyncInterfaces.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
+        <None Include="$(OutputPath)/System.IO.Pipelines.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
+        <None Include="$(OutputPath)/System.Text.Encodings.Web.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="$(OutputPath)/System.Text.Json.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="$(OutputPath)/YamlDotNet.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />
         <None Include="$(OutputPath)/YamlDotNet.System.Text.Json.dll" Pack="true" PackagePath="/tasks/netstandard2.0/" />

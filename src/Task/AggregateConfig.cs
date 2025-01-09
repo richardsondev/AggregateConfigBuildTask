@@ -97,7 +97,7 @@ namespace AggregateConfigBuildTask
                 if (!Enum.TryParse(OutputType, true, out FileType outputType) ||
                     !Enum.IsDefined(typeof(FileType), outputType))
                 {
-                    logger.LogError("Invalid FileType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
+                    logger.LogError(message: "Invalid FileType: {0}. Available options: {1}", OutputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
                     return false;
                 }
 
@@ -105,7 +105,7 @@ namespace AggregateConfigBuildTask
                 if (!string.IsNullOrEmpty(InputType) &&
                     (!Enum.TryParse(InputType, true, out inputType) || !Enum.IsDefined(typeof(FileType), inputType)))
                 {
-                    logger.LogError("Invalid FileType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
+                    logger.LogError(message: "Invalid FileType: {0}. Available options: {1}", InputType, string.Join(", ", Enum.GetNames(typeof(FileType))));
                     return false;
                 }
 
@@ -121,7 +121,7 @@ namespace AggregateConfigBuildTask
 
                 if (finalResult == null)
                 {
-                    logger.LogError("No input was found! Check the input directory.");
+                    logger.LogError(message: "No input was found! Check the input directory.");
                     return false;
                 }
 
@@ -136,7 +136,7 @@ namespace AggregateConfigBuildTask
             }
             catch (Exception ex)
             {
-                logger.LogError("An unknown exception occurred: {0}", ex.Message);
+                logger.LogError(message: "An unknown exception occurred: {0}", ex.Message);
                 logger.LogErrorFromException(ex, true, true, null);
                 return false;
             }

@@ -53,7 +53,7 @@ namespace AggregateConfigBuildTask
                         catch (ArgumentException ex)
                         {
                             hasError = true;
-                            log.LogError("No reader found for file {0}: {1} Stacktrace: {2}", file, ex.Message, ex.StackTrace);
+                            log.LogError(message: "No reader found for file {0}: {1} Stacktrace: {2}", file, ex.Message, ex.StackTrace);
                             continue;
                         }
 
@@ -65,7 +65,7 @@ namespace AggregateConfigBuildTask
                         catch (Exception ex)
                         {
                             hasError = true;
-                            log.LogError("Could not parse {0}: {1}", file, ex.Message);
+                            log.LogError(message: "Could not parse {0}: {1}", file, ex.Message);
                             log.LogErrorFromException(ex, true, true, file);
                             continue;
                         }

@@ -1,10 +1,21 @@
 version: 2
 updates:
-  - package-ecosystem: "nuget" 
-    directory: "/"
+  - package-ecosystem: "nuget"
+    directory: "/src/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "nuget"
+    assignees:
+      - "richardsondev"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    assignees:
+      - "richardsondev"

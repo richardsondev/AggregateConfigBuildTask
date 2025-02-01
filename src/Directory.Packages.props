@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0" PrivateAssets="all" />
     <PackageVersion Include="System.IO.Pipelines" Version="9.0.0" PrivateAssets="all" />
-    <PackageVersion Include="System.Text.Encodings.Web" Version="9.0.0" PrivateAssets="all" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="9.0.1" PrivateAssets="all" />
     <PackageVersion Include="System.Text.Json" Version="9.0.0" PrivateAssets="all" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" PrivateAssets="all" GeneratePathProperty="true" />
     <PackageVersion Include="YamlDotNet.System.Text.Json" Version="1.6.5" PrivateAssets="all" />

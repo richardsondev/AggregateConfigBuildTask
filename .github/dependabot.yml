@@ -9,6 +9,10 @@ updates:
       - "nuget"
     assignees:
       - "richardsondev"
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -19,3 +23,7 @@ updates:
       - "github-actions"
     assignees:
       - "richardsondev"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"

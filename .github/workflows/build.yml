@@ -11,6 +11,11 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+  actions: read
+
 jobs:
   build:
     runs-on: windows-latest

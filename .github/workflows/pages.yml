@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-  
+
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -68,17 +68,28 @@ jobs:
         shell: pwsh
         run: .\docfx\docfx.exe docfx.json
 
-      - name: Inject canonical link into every index.html
+      - name: Inject canonicals & fix index.html anchors
         shell: pwsh
         run: |
-          $Origin = 'https://docs.richardson.dev'
+          $Origin = 'https://docs.richardson.dev/AggregateConfigBuildTask'
           $SiteRoot = Resolve-Path _site
+
+          # Add canonical to every generated index.html
           Get-ChildItem $SiteRoot -Recurse -Filter index.html | ForEach-Object {
-            $rel  = ($_.FullName.Substring($SiteRoot.Path.Length) -replace '\\','/')
+            $rel = ($_.FullName.Substring($SiteRoot.Path.Length) -replace '\\','/')
             $canon = $Origin + ($rel -replace 'index\.html$','')
+
             (Get-Content $_.FullName -Raw) -replace '</head>', (
               "<link rel=`"canonical`" href=`"$canon`" />`n</head>"
             ) | Set-Content $_.FullName
+          }
+
+          # Replace anchor HREFs ending in "/index.html" (with or without fragment)
+          Get-ChildItem $SiteRoot -Recurse -Filter *.html | ForEach-Object {
+            (Get-Content $_.FullName -Raw) `
+              -replace '(href=`"[^`"]*?)index\.html(?=[#`"])', '$1' `
+              -replace '(href=`"[^`"]*?)index\.html`"',    '$1`"' |
+              Set-Content $_.FullName
           }
 
       - name: Install html-minifier-terser
@@ -88,14 +99,25 @@ jobs:
         shell: pwsh
         run: |
           html-minifier-terser `
-            --input-dir  _site `
+            --input-dir _site `
             --output-dir _site `
-            --file-ext   html `
+            --file-ext html `
             --collapse-whitespace `
+            --collapse-boolean-attributes `
             --remove-comments `
             --remove-optional-tags `
+            --remove-redundant-attributes `
+            --remove-script-type-attributes `
+            --remove-style-link-type-attributes `
+            --remove-attribute-quotes `
+            --use-short-doctype `
             --minify-css true `
-            --minify-js  true
+            --minify-js true `
+            --minify-urls true `
+            --sort-attributes true `
+            --sort-class-name true `
+            --decode-entities true `
+            --verbose
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

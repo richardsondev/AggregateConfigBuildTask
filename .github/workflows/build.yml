@@ -55,11 +55,21 @@ jobs:
 
         echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
 
+    - name: Generate SBOM for the project
+      uses: advanced-security/generate-sbom-action@v1
+      id: gensbom
+
     - name: Build AggregateConfigBuildTask solution in Release mode
       run: dotnet build src/dirs.proj --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     - name: Run tests for AggregateConfigBuildTask solution
       run: dotnet test src/dirs.proj --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true --no-build
+
+    - name: Upload SBOM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: ${{ steps.gensbom.outputs.fileName }}
 
     - name: Upload NuGetPackage artifact
       uses: actions/upload-artifact@v4
@@ -98,10 +108,10 @@ jobs:
       run: dotnet nuget add source ${{ github.workspace }}/nuget/local --name AggregateConfigBuildTask
 
     - name: Build IntegrationTests in Release mode
-      run: dotnet build test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }}
+      run: dotnet build test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:UseLocalPackageVersion=true
 
     - name: Run IntegrationTests
-      run: dotnet test test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:CollectCoverage=true
+      run: dotnet test test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:CollectCoverage=true -p:UseLocalPackageVersion=true
 
     - name: Upload integration results artifact
       uses: actions/upload-artifact@v4

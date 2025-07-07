@@ -15,7 +15,14 @@ These tests differ from the [unit tests](../src/UnitTests/) in that they:
 
 ### Prerequisites
 
-The integration tests require the NuGet package to be built and available locally. You can either:
+The integration tests require the NuGet package to be available. By default, they use the version specified in `Directory.Packages.props`, but can be configured to use a different version for CI/CD testing.
+
+### Version Management
+
+- **Default behavior**: Uses the `AggregateConfigBuildTask` version from `Directory.Packages.props`
+- **CI/CD testing**: Set `UseLocalPackageVersion=true` to use the version specified by the `Version` property
+
+### Running Tests
 
 1. **Build and run everything together** (recommended):
    ```bash
@@ -23,7 +30,12 @@ The integration tests require the NuGet package to be built and available locall
    dotnet test test/dirs.proj --configuration Release --no-build
    ```
 
-2. **Manually provide the NuGet package**:
+2. **Test with a specific package version** (useful for CI/CD):
+   ```bash
+   dotnet test test/dirs.proj --configuration Release -p:UseLocalPackageVersion=true -p:Version=1.2.3
+   ```
+
+3. **Manually provide the NuGet package**:
    First, build the package:
    ```bash
    dotnet pack src/Task/AggregateConfigBuildTask.csproj --configuration Release

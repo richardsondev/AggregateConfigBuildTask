@@ -12,7 +12,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AggregateConfigBuildTask" VersionOverride="[$(Version)]" />
+        <!-- Use pipeline version during CI/CD integration testing, otherwise use Directory.Packages.props version -->
+        <PackageReference Include="AggregateConfigBuildTask" VersionOverride="[$(Version)]" Condition="'$(UseLocalPackageVersion)' == 'true'" />
+        <PackageReference Include="AggregateConfigBuildTask" Condition="'$(UseLocalPackageVersion)' != 'true'" />
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="MSTest.TestAdapter" />

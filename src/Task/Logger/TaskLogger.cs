@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -22,7 +23,7 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc />
-        public void LogError(string message, params object[] messageArgs)
+        public void LogError(string message = null, params object[] messageArgs)
         {
             Log.LogError(message ?? "Unknown Error", messageArgs);
         }

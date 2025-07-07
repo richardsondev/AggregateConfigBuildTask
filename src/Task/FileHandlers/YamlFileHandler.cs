@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.System.Text.Json;
@@ -10,7 +11,7 @@ namespace AggregateConfigBuildTask.FileHandlers
     /// <inheritdoc/>
     public class YamlFileHandler : IFileHandler
     {
-        readonly IFileSystem fileSystem;
+        private readonly IFileSystem fileSystem;
 
         internal YamlFileHandler(IFileSystem fileSystem)
         {

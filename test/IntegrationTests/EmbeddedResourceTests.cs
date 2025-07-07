@@ -20,10 +20,8 @@ namespace AggregateConfig.Tests.Integration
             {
                 Assert.IsNotNull(stream, $"Embedded resource '{resourceName}' not found. Available: {string.Join(", ", Assembly.GetAssembly(typeof(EmbeddedResourceTests)).GetManifestResourceNames())}");
 
-                using (var reader = new StreamReader(stream))
-                {
-                    jsonContent = reader.ReadToEnd();
-                }
+                using var reader = new StreamReader(stream);
+                jsonContent = reader.ReadToEnd();
             }
 
             // Deserialize the JSON into an object

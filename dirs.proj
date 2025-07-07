@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.Build.Traversal">
+
+  <ItemGroup>
+    <!-- Folder-level project references -->
+    <ProjectReference Include="src\dirs.proj" />
+    <ProjectReference Include="test\dirs.proj" />
+  </ItemGroup>
+
+</Project>

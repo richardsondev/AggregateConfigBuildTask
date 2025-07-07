@@ -6,7 +6,7 @@ namespace AggregateConfigBuildTask.FileHandlers
     /// <inheritdoc/>
     public class JsonFileHandler : IFileHandler
     {
-        readonly IFileSystem fileSystem;
+        private readonly IFileSystem fileSystem;
 
         private readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 

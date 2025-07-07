@@ -30,8 +30,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 // Ensure the file starts with the given path
                 if (file.StartsWith(path, StringComparison))
                 {
-                    // Perform a regex match using the translated pattern
-                    if (Regex.IsMatch(file, regexPattern, RegexOptions))
+                    // Perform a regex match using the translated pattern with timeout
+                    if (Regex.IsMatch(file, regexPattern, RegexOptions, TimeSpan.FromMilliseconds(500)))
                     {
                         files.Add(file);
                     }

@@ -359,6 +359,28 @@ foreach (var name in resourceNames)
 
 This will list all embedded resources, allowing you to confirm the correct name to use when loading the resource.
 
+## Development
+
+This project uses `dirs.proj` files with the Microsoft.Build.Traversal SDK for project organization instead of traditional solution files. This approach provides better performance and more flexibility for build scenarios.
+
+### Generating Solution Files
+
+If you need Visual Studio solution files for development, you can generate them using the [Microsoft.VisualStudio.SlnGen](https://github.com/microsoft/slngen) global tool:
+
+```bash
+# Install the slngen global tool
+dotnet tool install --global Microsoft.VisualStudio.SlnGen
+
+# Generate solution files from dirs.proj files
+slngen src/dirs.proj --folders true
+slngen test/dirs.proj --folders true
+
+# Or generate a solution for the entire repository
+slngen dirs.proj --folders true
+```
+
+The generated solution files will include all projects referenced by the `dirs.proj` files and maintain the folder structure for easy navigation in Visual Studio.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/richardsondev/AggregateConfigBuildTask/blob/main/LICENSE) file for details.

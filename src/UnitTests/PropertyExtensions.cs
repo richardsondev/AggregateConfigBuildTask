@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -16,7 +17,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
         /// <returns>An array of TaskItems.</returns>
         public static ITaskItem[] CreateTaskItems(this IDictionary<string, string> properties, bool legacyAdditionalProperties)
         {
-            return properties.Select((q) => {
+            return properties.Select((q) =>
+            {
                 if (legacyAdditionalProperties)
                 {
                     // Legacy format: "Key=Value" in ItemSpec

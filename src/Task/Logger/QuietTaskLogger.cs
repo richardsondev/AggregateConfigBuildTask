@@ -24,7 +24,7 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc />
-        public void LogError(string message, params object[] messageArgs)
+        public void LogError(string message = null, params object[] messageArgs)
         {
             Log.LogError(message ?? "Unknown Error", messageArgs);
         }

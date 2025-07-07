@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using Microsoft.Build.Framework;
 
 namespace AggregateConfigBuildTask
@@ -38,7 +39,7 @@ namespace AggregateConfigBuildTask
         {
             if (data is IDictionary<object, object> dict)
             {
-                var convertedDict = new Dictionary<string, object>();
+                var convertedDict = new Dictionary<string, object>(StringComparer.Ordinal);
 
                 foreach (var key in dict.Keys)
                 {
@@ -72,7 +73,7 @@ namespace AggregateConfigBuildTask
         /// <returns>A dictionary containing the parsed key-value pairs.</returns>
         public static Dictionary<string, string> ParseAdditionalProperties(ITaskItem[] properties)
         {
-            var additionalPropertiesDict = new Dictionary<string, string>();
+            var additionalPropertiesDict = new Dictionary<string, string>(StringComparer.Ordinal);
             const string unicodeEscape = "\u001F";
             char[] split = new[] { '=' };
 
@@ -137,7 +138,7 @@ namespace AggregateConfigBuildTask
         /// <returns>A dictionary representing the JsonElement.</returns>
         public static Dictionary<string, JsonElement> JsonElementToDictionary(JsonElement jsonElement)
         {
-            var dictionary = new Dictionary<string, JsonElement>();
+            var dictionary = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
 
             foreach (var property in jsonElement.EnumerateObject())
             {

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+
 using Microsoft.Build.Framework;
+
 using Moq;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -205,7 +209,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 OutputFile = testPath + @"\output.json",
                 OutputType = nameof(FileType.Json),
                 AddSourceProperty = true,
-                AdditionalProperties = new Dictionary<string, string>
+                AdditionalProperties = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     { "Group", "TestRG" },
                     { "Environment\\=Key", "Prod\\=West" }
@@ -250,7 +254,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 OutputFile = testPath + @"\output.json",
                 OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
-                AdditionalProperties = new Dictionary<string, string>
+                AdditionalProperties = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
@@ -376,7 +380,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 OutputFile = testPath + @"\output.json",
                 OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
-                AdditionalProperties = new Dictionary<string, string>
+                AdditionalProperties = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     { "Group", "TestRG" },
                     { "Environment", "Prod" }
@@ -431,7 +435,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 OutputFile = testPath + @"\output.parameters.json",
                 OutputType = nameof(FileType.Arm),
                 AddSourceProperty = true,
-                AdditionalProperties = new Dictionary<string, string>
+                AdditionalProperties = new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     { "Group", "TestRG" },
                     { "Environment", "'Prod'" }
@@ -471,8 +475,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
                 for (int optionIndex = 1; optionIndex <= totalOptionsPerFile; optionIndex++)
                 {
-                    sb.AppendLine($"  - name: 'Option {optionIndex}'")
-                        .AppendLine($"    description: 'Description for Option {optionIndex}'");
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"  - name: 'Option {optionIndex}'")
+                        .AppendLine(CultureInfo.InvariantCulture, $"    description: 'Description for Option {optionIndex}'");
                 }
 
                 // Write each YAML file to the mock file system
@@ -519,14 +523,32 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             Assert.IsTrue(steps?.Length > 0);
 
-            // Arrange: Prepare paths and sample data based on the input type.
+            // Setup input file
+            string inputFilePath = SetupInputFile(inputType);
+
+            // Execute translation chain
+            var (finalInputPath, finalOutputType) = ExecuteTranslationChain(inputType, steps, inputFilePath);
+
+            // Execute final conversion back to original format
+            string finalOutputPath = ExecuteFinalConversion(inputType, finalInputPath, finalOutputType);
+
+            // Validate no data loss
+            AssertNoDataLoss(inputFilePath, finalOutputPath, inputType);
+        }
+
+        private string SetupInputFile(string inputType)
+        {
             var inputDir = $"{testPath}\\input";
             virtualFileSystem.CreateDirectory(inputDir);
 
-            // Write the initial input file
-            var inputFilePath = $"{inputDir}\\input.{(inputType == "arm" ? "json" : inputType)}";
+            var inputFilePath = $"{inputDir}\\input.{(string.Equals(inputType, "arm", StringComparison.Ordinal) ? "json" : inputType)}";
             virtualFileSystem.WriteAllText(inputFilePath, GetSampleDataForType(inputType));
 
+            return inputFilePath;
+        }
+
+        private (string path, string outputType) ExecuteTranslationChain(string inputType, string[] steps, string inputFilePath)
+        {
             string previousInputPath = inputFilePath;
             string previousOutputType = inputType;
 
@@ -535,7 +557,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 var outputType = steps[i];
                 var stepDir = $"{testPath}\\step{i + 1}";
-                var stepOutputPath = $"{stepDir}\\output.{(outputType == "arm" ? "json" : outputType)}";
+                var stepOutputPath = $"{stepDir}\\output.{(string.Equals(outputType, "arm", StringComparison.Ordinal) ? "json" : outputType)}";
 
                 virtualFileSystem.CreateDirectory(stepDir);
 
@@ -547,15 +569,19 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 previousOutputType = outputType;
             }
 
+            return (previousInputPath, previousOutputType);
+        }
+
+        private string ExecuteFinalConversion(string inputType, string previousInputPath, string previousOutputType)
+        {
             // Final step: Convert the final output back to the original input type
             var finalDir = $"{testPath}\\final";
-            var finalOutputPath = $"{finalDir}\\final_output.{(inputType == "arm" ? "json" : inputType)}";
+            var finalOutputPath = $"{finalDir}\\final_output.{(string.Equals(inputType, "arm", StringComparison.Ordinal) ? "json" : inputType)}";
             virtualFileSystem.CreateDirectory(finalDir);
 
             ExecuteTranslationTask(previousOutputType, inputType, previousInputPath, finalOutputPath);
 
-            // Assert: Compare final output with original input to check no data loss
-            AssertNoDataLoss(inputFilePath, finalOutputPath, inputType);
+            return finalOutputPath;
         }
 
         private void ExecuteTranslationTask(string inputType, string outputType, string inputFilePath, string outputFilePath)
@@ -576,14 +602,32 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             string originalInput = virtualFileSystem.ReadAllText(originalFilePath);
             string finalOutput = virtualFileSystem.ReadAllText(finalFilePath);
-            Assert.AreEqual(originalInput, finalOutput, $"Data mismatch after full conversion cycle for {inputType}");
+            Assert.IsTrue(string.Equals(originalInput, finalOutput, StringComparison.Ordinal), $"Data mismatch after full conversion cycle for {inputType}");
         }
 
         private static string GetSampleDataForType(string type)
         {
-            return type switch
+            if (string.Equals(type, "json", StringComparison.Ordinal))
             {
-                "json" => """
+                return GetJsonSampleData();
+            }
+            else if (string.Equals(type, "arm", StringComparison.Ordinal))
+            {
+                return GetArmSampleData();
+            }
+            else if (string.Equals(type, "yml", StringComparison.Ordinal))
+            {
+                return GetYmlSampleData();
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown type");
+            }
+        }
+
+        private static string GetJsonSampleData()
+        {
+            return """
 {
   "options": [
     {
@@ -606,8 +650,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
     }
   ]
 }
-""",
-                "arm" => """
+""";
+        }
+
+        private static string GetArmSampleData()
+        {
+            return """
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -635,8 +683,12 @@ namespace AggregateConfigBuildTask.Tests.Unit
     }
   }
 }
-""",
-                "yml" => @"options:
+""";
+        }
+
+        private static string GetYmlSampleData()
+        {
+            return @"options:
 - name: Option 1
   description: First option
   isTrue: true
@@ -648,10 +700,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
     number: 1003
   - name: Nested option 2
     description: Nested second option
-",
-
-                _ => throw new InvalidOperationException("Unknown type")
-            };
+";
         }
 
         /// <summary>
@@ -664,9 +713,9 @@ namespace AggregateConfigBuildTask.Tests.Unit
         {
             return options.Any(option =>
                 option.ContainsKey("name") &&
-                (string)option["name"] == optionName &&
+                string.Equals((string)option["name"], optionName, StringComparison.Ordinal) &&
                 option.ContainsKey("source") &&
-                (string)option["source"] == expectedSource);
+                string.Equals((string)option["source"], expectedSource, StringComparison.Ordinal));
         }
     }
 }

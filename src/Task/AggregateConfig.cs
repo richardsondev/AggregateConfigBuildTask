@@ -2,8 +2,11 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+
 using AggregateConfigBuildTask.FileHandlers;
+
 using Microsoft.Build.Framework;
+
 using Task = Microsoft.Build.Utilities.Task;
 
 [assembly: InternalsVisibleTo("AggregateConfig.Tests.UnitTests")]
@@ -25,7 +28,7 @@ namespace AggregateConfigBuildTask
         public string InputDirectory { get; set; }
 
         /// <summary>
-        /// The type of input file type to be processed from <see cref="FileType"/>. If not specified, the default type <see cref="FileType.Yml"/> is used.
+        /// The type of input file type to be processed from <see cref="FileType"/>. If not specified, the default type <see cref="FileType.Yaml"/> is used.
         /// </summary>
         public string InputType { get; set; }
 

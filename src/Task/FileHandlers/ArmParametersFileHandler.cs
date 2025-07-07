@@ -55,13 +55,13 @@ namespace AggregateConfigBuildTask.FileHandlers
         {
             if (mergedData.HasValue && mergedData.Value.ValueKind == JsonValueKind.Object)
             {
-                var parameters = new Dictionary<string, object>();
+                var parameters = new Dictionary<string, object>(StringComparer.Ordinal);
 
                 foreach (var kvp in mergedData.Value.EnumerateObject())
                 {
                     string type = GetParameterType(kvp.Value);
 
-                    parameters[kvp.Name] = new Dictionary<string, object>
+                    parameters[kvp.Name] = new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         ["type"] = type,
                         ["value"] = kvp.Value
@@ -69,7 +69,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                 }
 
                 // ARM template structure
-                var armTemplate = new Dictionary<string, object>
+                var armTemplate = new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     ["$schema"] = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                     ["contentVersion"] = "1.0.0.0",
@@ -111,7 +111,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return "object";
 
                 default:
-                    throw new ArgumentException("Unsupported type for ARM template parameters.");
+                    throw new ArgumentException("Unsupported type for ARM template parameters.", nameof(value));
             }
         }
 

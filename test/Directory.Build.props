@@ -1,0 +1,11 @@
+<Project>
+  <!-- Import the root Directory.Build.props -->
+  <Import Project="../Directory.Build.props" />
+  
+  <PropertyGroup>
+    <!-- Relax analyzer warnings for integration tests -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <NoWarn>$(NoWarn);CA1515;CA1707</NoWarn>
+  </PropertyGroup>
+</Project>

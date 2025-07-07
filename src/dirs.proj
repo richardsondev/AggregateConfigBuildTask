@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.Build.Traversal">
+
+  <ItemGroup>
+    <!-- Main project references -->
+    <ProjectReference Include="Task\AggregateConfigBuildTask.csproj" />
+    <ProjectReference Include="UnitTests\UnitTests.csproj" />
+  </ItemGroup>
+
+</Project>

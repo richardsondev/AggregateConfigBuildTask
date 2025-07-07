@@ -116,8 +116,7 @@ jobs:
             --minify-urls true `
             --sort-attributes true `
             --sort-class-name true `
-            --decode-entities true `
-            --verbose
+            --decode-entities true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

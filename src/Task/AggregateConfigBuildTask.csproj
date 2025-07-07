@@ -65,7 +65,7 @@
         </None>
         <None Include="../../README.md" Pack="true" PackagePath="/docs/" />
         <None Include="../../image/icon/icon_128.png" Pack="true" PackagePath="/icon.png" />
-        <None Include="../../*.sbom.json" Pack="true" PackagePath="/sbom/" Condition="Exists('../../*.sbom.json')" />
+        <None Include="../../sbom-*.json" Pack="true" PackagePath="/sbom/" Condition="Exists('../../sbom-*.json')" />
     </ItemGroup>
 
 </Project>

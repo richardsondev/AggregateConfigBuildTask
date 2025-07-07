@@ -68,6 +68,35 @@ jobs:
         shell: pwsh
         run: .\docfx\docfx.exe docfx.json
 
+      - name: Inject canonical link into every index.html
+        shell: pwsh
+        run: |
+          $Origin = 'https://docs.richardson.dev'
+          $SiteRoot = Resolve-Path _site
+          Get-ChildItem $SiteRoot -Recurse -Filter index.html | ForEach-Object {
+            $rel  = ($_.FullName.Substring($SiteRoot.Path.Length) -replace '\\','/')
+            $canon = $Origin + ($rel -replace 'index\.html$','')
+            (Get-Content $_.FullName -Raw) -replace '</head>', (
+              "<link rel=`"canonical`" href=`"$canon`" />`n</head>"
+            ) | Set-Content $_.FullName
+          }
+
+      - name: Install html-minifier-terser
+        run: npm install -g html-minifier-terser
+
+      - name: Minify HTML output
+        shell: pwsh
+        run: |
+          html-minifier-terser `
+            --input-dir  _site `
+            --output-dir _site `
+            --file-ext   html `
+            --collapse-whitespace `
+            --remove-comments `
+            --remove-optional-tags `
+            --minify-css true `
+            --minify-js  true
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

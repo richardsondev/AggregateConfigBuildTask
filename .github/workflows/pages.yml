@@ -99,25 +99,13 @@ jobs:
         shell: pwsh
         run: |
           html-minifier-terser `
-            --input-dir _site `
+            --input-dir  _site `
             --output-dir _site `
-            --file-ext html `
-            --collapse-whitespace `
-            --collapse-boolean-attributes `
+            --file-ext   html `
             --remove-comments `
             --remove-optional-tags `
-            --remove-redundant-attributes `
-            --remove-script-type-attributes `
-            --remove-style-link-type-attributes `
-            --remove-attribute-quotes `
-            --use-short-doctype `
             --minify-css true `
-            --minify-js true `
-            --minify-urls true `
-            --sort-attributes true `
-            --sort-class-name true `
-            --decode-entities true `
-            --verbose
+            --minify-js  true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

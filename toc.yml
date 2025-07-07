@@ -4,8 +4,8 @@ items:
   href: README.md
 - name: Code Docs
   href: docs/
-- name: GitHub
+- name: GitHub 🔗
   href: https://github.com/richardsondev/AggregateConfigBuildTask
-- name: NuGet
+- name: NuGet 🔗
   href: https://www.nuget.org/packages/AggregateConfigBuildTask
 memberLayout: memberpage

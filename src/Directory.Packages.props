@@ -28,8 +28,9 @@
   <!-- Global packages -->
   <ItemGroup>
     <GlobalPackageReference Include="AsyncFixer" Version="1.6.0" />
+    <GlobalPackageReference Include="Meziantou.Analyzer" Version="2.0.205" />
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
-    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.11" />
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.12" />
     <GlobalPackageReference Include="Roslynator.Analyzers" Version="4.13.1" />
   </ItemGroup>
 </Project>

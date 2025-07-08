@@ -26,7 +26,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                 case FileType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
                 default:
-                    throw new ArgumentException("Unsupported format");
+                    throw new ArgumentException("Unsupported format", nameof(format));
             }
         }
 
@@ -47,7 +47,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                 case FileType.Arm:
                     return new List<string> { ".json" };
                 default:
-                    throw new ArgumentException("Unsupported input type");
+                    throw new ArgumentException("Unsupported input type", nameof(inputType));
             }
         }
     }

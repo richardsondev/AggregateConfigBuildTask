@@ -12,12 +12,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AggregateConfigBuildTask" Version="[$(Version)]" />
-        <PackageReference Include="coverlet.collector" Version="6.0.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-        <PackageReference Include="MSTest.TestAdapter" Version="3.6.1" />
-        <PackageReference Include="MSTest.TestFramework" Version="3.6.1" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+        <!-- Use pipeline version during CI/CD integration testing, otherwise use Directory.Packages.props version -->
+        <PackageReference Include="AggregateConfigBuildTask" VersionOverride="[$(Version)]" Condition="'$(UseLocalPackageVersion)' == 'true'" />
+        <PackageReference Include="AggregateConfigBuildTask" Condition="'$(UseLocalPackageVersion)' != 'true'" />
+        <PackageReference Include="coverlet.collector" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="MSTest.TestAdapter" />
+        <PackageReference Include="MSTest.TestFramework" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>

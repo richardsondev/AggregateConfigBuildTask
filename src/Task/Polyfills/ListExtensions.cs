@@ -20,7 +20,7 @@ namespace AggregateConfigBuildTask
         /// <returns>An IEnumerable of string arrays, each containing a chunk of the original list.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When chunk size is 0 or less</exception>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <c>null</c>.</exception>
-        public static IEnumerable<IEnumerable<string>> Chunk(this List<string> source, int chunkSize)
+        public static IEnumerable<IEnumerable<string>> Chunk(this ICollection<string> source, int chunkSize)
         {
             if (source == null)
             {
@@ -36,9 +36,10 @@ namespace AggregateConfigBuildTask
 
             IEnumerable<IEnumerable<string>> FetchChunks()
             {
-                for (int i = 0; i < source.Count; i += chunkSize)
+                var list = source as List<string> ?? source.ToList();
+                for (int i = 0; i < list.Count; i += chunkSize)
                 {
-                    yield return source.GetRange(i, Math.Min(chunkSize, source.Count - i));
+                    yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
                 }
             }
         }

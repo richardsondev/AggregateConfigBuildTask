@@ -1,12 +1,14 @@
-﻿using AggregateConfigBuildTask.FileHandlers;
-using Microsoft.Build.Framework;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using AggregateConfigBuildTask.FileHandlers;
+
+using Microsoft.Build.Framework;
 
 namespace AggregateConfigBuildTask
 {
@@ -39,7 +41,8 @@ namespace AggregateConfigBuildTask
                 .Chunk(100);
 
             await fileGroups.ForEachAsync(Environment.ProcessorCount,
-                async (files) => {
+                async (files) =>
+                {
                     JsonElement? intermediateResult = null;
                     foreach (var file in files)
                     {
@@ -101,7 +104,7 @@ namespace AggregateConfigBuildTask
             if (sourceObject != null && injectSourceProperty && sourceObject.HasValue && sourceObject.Value.ValueKind == JsonValueKind.Object)
             {
                 var obj2Dict = sourceObject.Value;
-                var jsonObject = obj2Dict.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+                var jsonObject = obj2Dict.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
 
                 foreach (var kvp in jsonObject.ToList())
                 {
@@ -119,7 +122,7 @@ namespace AggregateConfigBuildTask
                             if (currentObj2Nested.ValueKind == JsonValueKind.Object)
                             {
                                 var nestedObj = currentObj2Nested;
-                                var nestedDict = nestedObj.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+                                var nestedDict = nestedObj.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
 
                                 // Inject the "source" property
                                 nestedDict["source"] = JsonDocument.Parse($"\"{Path.GetFileNameWithoutExtension(source)}\"").RootElement;
@@ -159,8 +162,8 @@ namespace AggregateConfigBuildTask
             // Handle merging of objects
             if (obj1.Value.ValueKind == JsonValueKind.Object && obj2.Value.ValueKind == JsonValueKind.Object)
             {
-                var dict1 = obj1.Value.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
-                var dict2 = obj2.Value.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+                var dict1 = obj1.Value.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
+                var dict2 = obj2.Value.EnumerateObject().ToDictionary(p => p.Name, p => p.Value, StringComparer.Ordinal);
 
                 foreach (var key in dict2.Keys)
                 {

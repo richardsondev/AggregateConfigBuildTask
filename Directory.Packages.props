@@ -6,8 +6,8 @@
   </PropertyGroup>
   <!-- Build packages-->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Build.Framework" Version="17.14.8" PrivateAssets="all" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.8" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="17.14.28" PrivateAssets="all" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.28" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
   <!-- Runtime packages -->

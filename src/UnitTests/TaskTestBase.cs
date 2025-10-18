@@ -351,7 +351,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
             Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
+            Assert.IsTrue(parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -401,7 +401,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             Assert.AreEqual("String", parameters.GetValue("options", comparison)["value"].First()["source"].Type.ToString());
             Assert.AreEqual("file1", parameters.GetValue("options", comparison)["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
+            Assert.IsTrue(parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -456,7 +456,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             Assert.AreEqual("String", parameters.GetValue("options", comparison)["value"].First()["source"].Type.ToString());
             Assert.AreEqual("file1.parameters", parameters.GetValue("options", comparison)["value"].First()["source"].Value<string>());
             Assert.AreEqual("Boolean", parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Type.ToString());
-            Assert.AreEqual(true, parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
+            Assert.IsTrue(parameters.GetValue("options", comparison)["value"].First()["isEnabled"].Value<bool>());
         }
 
         [TestMethod]
@@ -521,7 +521,8 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [Description("Test that files are correctly translated between ARM, JSON, and YAML.")]
         public void ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps)
         {
-            Assert.IsTrue(steps?.Length > 0);
+            Assert.IsNotNull(steps);
+            Assert.IsGreaterThan(steps.Length, 0);
 
             // Setup input file
             string inputFilePath = SetupInputFile(inputType);

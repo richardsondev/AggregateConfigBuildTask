@@ -6,6 +6,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [TestInitialize]
         public void TestInitialize()
         {
+            if (TestContext is not null)
+            {
+                TestContext.CooperativeCancellation = true;
+            }
             base.TestInitialize(isWindowsMode: true, testPath: "C:\\MockDirectory");
         }
     }

@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         fetch-depth: 1
 
@@ -66,13 +66,13 @@ jobs:
       run: dotnet test src/dirs.proj --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true --no-build
 
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: sbom
         path: ${{ steps.gensbom.outputs.fileName }}
 
     - name: Upload NuGetPackage artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: NuGetPackage
         path: |
@@ -89,7 +89,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         fetch-depth: 1
 
@@ -99,7 +99,7 @@ jobs:
         dotnet-version: '9.0.x'
 
     - name: Download NuGetPackage artifact
-      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: NuGetPackage
         path: ./nuget/local
@@ -114,7 +114,7 @@ jobs:
       run: dotnet test test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:CollectCoverage=true -p:UseLocalPackageVersion=true
 
     - name: Upload integration results artifact
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
       with:
         name: IntegrationTestResults-${{ matrix.os }}
         path: test/IntegrationTests/out/

@@ -1,9 +1,9 @@
 ﻿databases:
   - type: 'PostgreSQL'
-    connectionString: 'Host=192.168.1.20;Database=appdb;Username=admin'
+    connectionString: 'Host=203.0.113.20;Database=appdb;Username=admin'
     port: 5432
     replicationEnabled: false
   - type: 'MongoDB'
-    connectionString: 'mongodb://admin:password@192.168.1.21:27017'
+    connectionString: 'mongodb://testuser:T3ST-n0t-r34l@203.0.113.21:27017'
     port: 27017
     shardingEnabled: true

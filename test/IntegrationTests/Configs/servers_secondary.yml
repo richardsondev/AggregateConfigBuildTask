@@ -1,8 +1,8 @@
 ﻿servers:
-  - name: 'web-server-03'
-    ipAddress: '192.168.1.30'
+  - name: 'app-server-03'
+    ipAddress: '203.0.113.30'
     roles:
       - 'web'
       - 'api'
     monitoringEnabled: true
-    operatingSystem: 'Ubuntu 20.04'
+    operatingSystem: 'Linux'

@@ -26,12 +26,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       with:
         fetch-depth: 1
 
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
       with:
         dotnet-version: '9.0.x'
 
@@ -56,7 +56,7 @@ jobs:
         echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
 
     - name: Generate SBOM for the project
-      uses: advanced-security/generate-sbom-action@v1
+      uses: advanced-security/generate-sbom-action@67c5cda0176c46ce546d2fee672f72cee7fd620f # v1
       id: gensbom
 
     - name: Build AggregateConfigBuildTask solution in Release mode
@@ -66,13 +66,13 @@ jobs:
       run: dotnet test src/dirs.proj --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true --no-build
 
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: sbom
         path: ${{ steps.gensbom.outputs.fileName }}
 
     - name: Upload NuGetPackage artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: NuGetPackage
         path: |
@@ -89,17 +89,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       with:
         fetch-depth: 1
 
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
       with:
         dotnet-version: '9.0.x'
 
     - name: Download NuGetPackage artifact
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
       with:
         name: NuGetPackage
         path: ./nuget/local
@@ -114,7 +114,7 @@ jobs:
       run: dotnet test test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:CollectCoverage=true -p:UseLocalPackageVersion=true
 
     - name: Upload integration results artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: IntegrationTestResults-${{ matrix.os }}
         path: test/IntegrationTests/out/

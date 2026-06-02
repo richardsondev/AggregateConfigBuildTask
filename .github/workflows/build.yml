@@ -34,7 +34,7 @@ jobs:
         fetch-depth: 1
 
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
       with:
         dotnet-version: '9.0.x'
 
@@ -59,7 +59,7 @@ jobs:
         echo "VERSION=$VERSION" >> $env:GITHUB_OUTPUT
 
     - name: Generate SBOM for the project
-      uses: advanced-security/generate-sbom-action@67c5cda0176c46ce546d2fee672f72cee7fd620f # v1
+      uses: advanced-security/generate-sbom-action@774e3baeba1acff1d3bb99dabd2b01a03f2c18ba # v1
       id: gensbom
 
     - name: Build AggregateConfigBuildTask solution in Release mode
@@ -69,13 +69,13 @@ jobs:
       run: dotnet test src/dirs.proj --configuration Release -warnaserror -p:Version=${{ steps.get_version.outputs.VERSION }} -p:CollectCoverage=true --no-build
 
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: sbom
         path: ${{ steps.gensbom.outputs.fileName }}
 
     - name: Upload NuGetPackage artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: NuGetPackage
         path: |
@@ -97,7 +97,7 @@ jobs:
         fetch-depth: 1
 
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
       with:
         dotnet-version: '9.0.x'
 
@@ -117,7 +117,7 @@ jobs:
       run: dotnet test test/dirs.proj --configuration Release -warnaserror -p:Version=${{ needs.build.outputs.VERSION }} -p:CollectCoverage=true -p:UseLocalPackageVersion=true
 
     - name: Upload integration results artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: IntegrationTestResults-${{ matrix.os }}
         path: test/IntegrationTests/out/

@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using System.Threading;
 
 namespace AggregateConfig.Tests.Integration
 {
@@ -15,6 +17,8 @@ namespace AggregateConfig.Tests.Integration
     public class PackageStructureTests
     {
         private static readonly string[] MultiTargetFrameworks = { "net8.0", "net9.0", "net10.0" };
+
+        private static readonly TimeSpan BuildTimeout = TimeSpan.FromMinutes(4);
 
         private static string TestProjectsPath => Path.Combine(
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
@@ -196,16 +200,18 @@ namespace AggregateConfig.Tests.Integration
             }
         }
 
-        private static (int exitCode, string output) RunDotNetBuild(string projectPath, string additionalArgs = "")
+        private static ProcessStartInfo CreateBuildStartInfo(string projectPath, string additionalArgs)
         {
             var versionArg = string.IsNullOrEmpty(PackageVersion)
                 ? string.Empty
                 : $"-p:AggregateConfigBuildTaskVersion={PackageVersion}";
 
+            // Node reuse and the shared compiler server are disabled so the child build never tries to
+            // attach to the MSBuild nodes or VBCSCompiler owned by the outer test run, which can hang.
             var startInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"build \"{projectPath}\" --nologo {versionArg} {additionalArgs}".Trim(),
+                Arguments = $"build \"{projectPath}\" --nologo -nodeReuse:false -p:UseSharedCompilation=false {versionArg} {additionalArgs}".Trim(),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -220,14 +226,52 @@ namespace AggregateConfig.Tests.Integration
                 startInfo.Environment.Remove(variable);
             }
 
-            using var process = new Process { StartInfo = startInfo };
+            startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+            startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+            startInfo.Environment["DOTNET_NOLOGO"] = "1";
+            startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+
+            return startInfo;
+        }
+
+        private static (int exitCode, string output) RunDotNetBuild(string projectPath, string additionalArgs = "")
+        {
+            var output = new StringBuilder();
+            var outputLock = new Lock();
+
+            using var process = new Process { StartInfo = CreateBuildStartInfo(projectPath, additionalArgs) };
+            process.OutputDataReceived += (_, args) => AppendLine(args.Data);
+            process.ErrorDataReceived += (_, args) => AppendLine(args.Data);
             process.Start();
 
-            var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
+            // Read both streams asynchronously so neither pipe can fill up and block the child.
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            if (!process.WaitForExit(BuildTimeout))
+            {
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit();
+                throw new TimeoutException($"dotnet build of {projectPath} did not finish within {BuildTimeout}. Output so far:\n{output}");
+            }
+
+            // A second wait with no timeout flushes the asynchronous output handlers.
             process.WaitForExit();
 
-            return (process.ExitCode, output + error);
+            return (process.ExitCode, output.ToString());
+
+            void AppendLine(string line)
+            {
+                if (line is null)
+                {
+                    return;
+                }
+
+                lock (outputLock)
+                {
+                    output.AppendLine(line);
+                }
+            }
         }
     }
 }

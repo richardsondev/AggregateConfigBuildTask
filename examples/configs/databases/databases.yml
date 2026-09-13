@@ -1,0 +1,3 @@
+databases:
+  - name: primary
+    engine: postgres

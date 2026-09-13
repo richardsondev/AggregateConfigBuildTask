@@ -1,0 +1,93 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <!-- Include the AggregateConfigBuildTask package -->
+    <ItemGroup>
+        <PackageReference Include="AggregateConfigBuildTask" Version="*" />
+    </ItemGroup>
+
+    <!-- 
+        Example 1: Simple item-based configuration aggregation
+        This will automatically run before the Build target, making files
+        available for embedding as resources
+    -->
+    <ItemGroup>
+        <AggregateConfigInput Include="configs\*.yml" 
+                              OutputFile="$(OutputPath)merged.json" 
+                              OutputType="Json"
+                              AddSourceProperty="true" />
+        
+        <!-- The generated file can be embedded as a resource -->
+        <EmbeddedResource Include="$(OutputPath)merged.json" />
+    </ItemGroup>
+
+    <!-- 
+        Example 2: Multiple outputs from the same input files
+    -->
+    <ItemGroup>
+        <!-- Generate JSON output -->
+        <AggregateConfigInput Include="configs\environment\*.yml" 
+                              OutputFile="$(OutputPath)environment.json" 
+                              OutputType="Json" />
+        
+        <!-- Generate ARM parameters from the same files -->
+        <AggregateConfigInput Include="configs\environment\*.yml" 
+                              OutputFile="$(OutputPath)environment.parameters.json" 
+                              OutputType="Arm" />
+        
+        <!-- Generate YAML output -->
+        <AggregateConfigInput Include="configs\environment\*.yml" 
+                              OutputFile="$(OutputPath)environment.yaml" 
+                              OutputType="Yaml" />
+    </ItemGroup>
+
+    <!-- 
+        Example 3: Process files from multiple directories
+    -->
+    <ItemGroup>
+        <!-- Process all config files recursively and preserve directory structure -->
+        <AggregateConfigInput Include="configs\**\*.yml" 
+                              OutputFile="$(OutputPath)%(RecursiveDir)%(FileName).json"
+                              OutputType="Json" />
+    </ItemGroup>
+
+    <!-- 
+        Example 4: Customize when aggregation runs
+        By default it runs before PrepareForBuild; here it is moved later, just before compilation
+    -->
+    <PropertyGroup>
+        <!-- Run just before CoreCompile instead of before PrepareForBuild -->
+        <AggregateConfigCompileBeforeTargets>CoreCompile</AggregateConfigCompileBeforeTargets>
+    </PropertyGroup>
+
+    <!-- 
+        Example 5: Custom output path for all aggregated configs
+    -->
+    <PropertyGroup>
+        <AggregateConfigOutputPath>$(MSBuildProjectDirectory)\generated\</AggregateConfigOutputPath>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <!-- This will use the custom output path -->
+        <AggregateConfigInput Include="configs\databases\*.yml" 
+                              OutputType="Json" />
+        <!-- OutputFile defaults to: $(AggregateConfigOutputPath)%(FileName).json -->
+    </ItemGroup>
+
+    <!-- 
+        Example 6: Legacy approach still works (backward compatibility)
+        Direct task invocation in a custom target
+    -->
+    <Target Name="LegacyAggregation" BeforeTargets="PrepareForBuild">
+        <AggregateConfig 
+            InputDirectory="configs\legacy"
+            OutputFile="$(OutputPath)legacy-output.json"
+            OutputType="Json"
+            AddSourceProperty="true" />
+    </Target>
+
+</Project>

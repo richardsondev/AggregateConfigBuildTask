@@ -2,13 +2,15 @@
 
     <PropertyGroup>
         <AssemblyName>AggregateConfig.Tests.Integration</AssemblyName>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>false</ImplicitUsings>
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version Condition=" '$(Version)' == '' ">0.0.1</Version>
+        <!-- The TestProjects folder holds standalone projects built by PackageStructureTests; keep their files out of this project -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects/**</DefaultItemExcludes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,11 +21,15 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="MSTest.TestAdapter" />
         <PackageReference Include="MSTest.TestFramework" />
-        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
+
+    <!-- Tells PackageStructureTests which package version the TestProjects should build against -->
+    <ItemGroup Condition="'$(UseLocalPackageVersion)' == 'true'">
+        <AssemblyMetadata Include="AggregateConfigBuildTaskVersion" Value="$(Version)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -146,6 +152,42 @@
         <Content Include="Configs\databases.yml" />
         <Content Include="Configs\servers_secondary.yml" />
         <Content Include="Configs\servers.yml" />
+    </ItemGroup>
+
+    <!-- 
+        Item-Based Approach Tests
+        These use the new AggregateConfigInput items that run automatically before Build
+        Output files go to intermediate output directory (obj) since they're only used for embedding
+    -->
+    <ItemGroup>
+        <!-- Test 1: Basic item-based aggregation with JSON output -->
+        <AggregateConfigInput Include="Configs\*.yml" 
+                              OutputFile="$(IntermediateOutputPath)aggregated\basic.json" 
+                              OutputType="Json"
+                              AddSourceProperty="true" />
+        <!-- Embed the item-based outputs as resources with custom logical names -->
+        <EmbeddedResource Include="$(IntermediateOutputPath)aggregated\basic.json">
+            <LogicalName>IntegrationTests.Aggregated.Basic.json</LogicalName>
+        </EmbeddedResource> 
+
+        <!-- Test 2: Item-based with ARM parameters output -->
+        <AggregateConfigInput Include="Configs\*.yml" 
+                              OutputFile="$(IntermediateOutputPath)aggregated\arm.parameters.json" 
+                              OutputType="Arm" />
+        <!-- Embed the item-based outputs as resources with custom logical names -->
+        <EmbeddedResource Include="$(IntermediateOutputPath)aggregated\arm.parameters.json">
+            <LogicalName>IntegrationTests.Aggregated.Arm.parameters.json</LogicalName>
+        </EmbeddedResource>
+
+        <!-- Test 3: Item-based with YAML output -->
+        <AggregateConfigInput Include="Configs\*.yml" 
+                              OutputFile="$(IntermediateOutputPath)aggregated\output.yaml" 
+                              OutputType="Yaml"
+                              AddSourceProperty="true" />
+        <!-- Embed the item-based outputs as resources with custom logical names -->
+        <EmbeddedResource Include="$(IntermediateOutputPath)aggregated\output.yaml">
+            <LogicalName>IntegrationTests.Aggregated.Output.yaml</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

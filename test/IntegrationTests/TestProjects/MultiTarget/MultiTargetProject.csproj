@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- Multiple target frameworks - uses the package's buildMultiTargeting/ folder -->
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <OutputType>Library</OutputType>
+        <IsPackable>false</IsPackable>
+        <!-- Disable Central Package Management for isolated test project -->
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AggregateConfigBuildTask" Version="$(AggregateConfigBuildTaskVersion)" />
+    </ItemGroup>
+
+    <!-- Item-based configuration aggregation -->
+    <ItemGroup>
+        <AggregateConfigInput Include="configs\*.yml"
+                              OutputFile="$(IntermediateOutputPath)aggregated\config.json"
+                              OutputType="Json"
+                              AddSourceProperty="true" />
+
+        <EmbeddedResource Include="$(IntermediateOutputPath)aggregated\config.json">
+            <LogicalName>MultiTargetProject.Aggregated.config.json</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <!-- Legacy approach also works -->
+    <Target Name="LegacyAggregation" BeforeTargets="PrepareForBuild">
+        <AggregateConfig
+            InputDirectory="configs"
+            OutputFile="$(IntermediateOutputPath)legacy\output.json"
+            OutputType="Json" />
+
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)legacy\output.json">
+                <LogicalName>MultiTargetProject.Legacy.output.json</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
+
+</Project>

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- Single target framework - uses the package's build/ folder -->
+        <TargetFramework>net10.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <IsPackable>false</IsPackable>
+        <!-- Disable Central Package Management for isolated test project -->
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AggregateConfigBuildTask" Version="$(AggregateConfigBuildTaskVersion)" />
+    </ItemGroup>
+
+    <!-- Item-based configuration aggregation -->
+    <ItemGroup>
+        <AggregateConfigInput Include="configs\*.yml"
+                              OutputFile="$(IntermediateOutputPath)aggregated\config.json"
+                              OutputType="Json"
+                              AddSourceProperty="true" />
+
+        <EmbeddedResource Include="$(IntermediateOutputPath)aggregated\config.json">
+            <LogicalName>SingleTargetProject.Aggregated.config.json</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <!-- Legacy approach also works -->
+    <Target Name="LegacyAggregation" BeforeTargets="PrepareForBuild">
+        <AggregateConfig
+            InputDirectory="configs"
+            OutputFile="$(IntermediateOutputPath)legacy\output.json"
+            OutputType="Json" />
+
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)legacy\output.json">
+                <LogicalName>SingleTargetProject.Legacy.output.json</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
+
+</Project>

@@ -1,0 +1,8 @@
+<Project>
+    <!-- Stops Directory.Build.props traversal so the test projects are isolated from the repository build settings. -->
+
+    <PropertyGroup>
+        <!-- PackageStructureTests overrides this with the freshly packed version when UseLocalPackageVersion is set. -->
+        <AggregateConfigBuildTaskVersion Condition="'$(AggregateConfigBuildTaskVersion)' == ''">1.0.8</AggregateConfigBuildTaskVersion>
+    </PropertyGroup>
+</Project>

@@ -1,0 +1,7 @@
+servers:
+  - name: web-server-1
+    ip: 192.168.1.10
+    port: 80
+  - name: web-server-2
+    ip: 192.168.1.11
+    port: 80

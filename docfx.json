@@ -43,6 +43,7 @@
       {
         "files": [
           "README.md",
+          "MIGRATION_GUIDE.md",
           "toc.yml"
         ],
         "dest": "./"

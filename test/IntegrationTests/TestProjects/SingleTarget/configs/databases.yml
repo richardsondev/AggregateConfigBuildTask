@@ -1,0 +1,7 @@
+databases:
+  - name: primary-db
+    host: db.example.com
+    port: 5432
+  - name: replica-db
+    host: db-replica.example.com
+    port: 5432

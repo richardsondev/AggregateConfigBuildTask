@@ -35,7 +35,7 @@ namespace AggregateConfigBuildTask.FileHandlers
         }
 
         /// <inheritdoc/>
-        public void WriteOutput(JsonElement? mergedData, string outputPath)
+        public Task WriteOutput(JsonElement? mergedData, string outputPath)
         {
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
@@ -43,7 +43,7 @@ namespace AggregateConfigBuildTask.FileHandlers
                 .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
                 .Build();
             var yamlContent = serializer.Serialize(mergedData);
-            fileSystem.WriteAllText(outputPath, yamlContent);
+            return fileSystem.WriteAllTextAsync(outputPath, yamlContent);
         }
     }
 }

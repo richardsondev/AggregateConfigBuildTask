@@ -1,0 +1,3 @@
+<Project>
+    <!-- Stop Directory.Build.targets traversal - test projects should be isolated -->
+</Project>

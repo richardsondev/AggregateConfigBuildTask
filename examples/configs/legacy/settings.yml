@@ -1,0 +1,3 @@
+settings:
+  - key: legacyMode
+    value: true

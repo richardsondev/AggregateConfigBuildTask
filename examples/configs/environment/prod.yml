@@ -1,0 +1,3 @@
+servers:
+  - name: web-prod
+    url: https://www.example.com

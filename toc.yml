@@ -2,6 +2,8 @@
 items:
 - name: Home
   href: README.md
+- name: Migration Guide
+  href: MIGRATION_GUIDE.md
 - name: Code Docs
   href: docs/
 - name: GitHub 🔗

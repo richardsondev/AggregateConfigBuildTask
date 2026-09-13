@@ -1,6 +1,77 @@
-﻿<Project>
+<Project>
 
-    <UsingTask TaskName="AggregateConfig"
-        AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\AggregateConfigBuildTask.dll" />
+    <!-- Default properties for the AggregateConfigCompile target -->
+    <PropertyGroup>
+        <!-- Targets the AggregateConfigCompile target should run after (none by default) -->
+        <AggregateConfigCompileAfterTargets Condition="'$(AggregateConfigCompileAfterTargets)' == ''"></AggregateConfigCompileAfterTargets>
+
+        <!-- Additional targets the AggregateConfigCompile target depends on -->
+        <AggregateConfigCompileDependsOn Condition="'$(AggregateConfigCompileDependsOn)' == ''"></AggregateConfigCompileDependsOn>
+
+        <!-- Targets the AggregateConfigCompile target should run before.
+             Defaults to PrepareForBuild so generated files exist before resources are embedded or code is compiled. -->
+        <AggregateConfigCompileBeforeTargets Condition="'$(AggregateConfigCompileBeforeTargets)' == ''">PrepareForBuild</AggregateConfigCompileBeforeTargets>
+
+        <!-- Default output directory used when an item does not specify OutputFile metadata -->
+        <AggregateConfigOutputPath Condition="'$(AggregateConfigOutputPath)' == ''">$(OutputPath)</AggregateConfigOutputPath>
+    </PropertyGroup>
+
+    <!--
+        Applies default metadata to @(AggregateConfigInput) items:
+        - OutputType defaults to Json
+        - OutputFile defaults to $(AggregateConfigOutputPath)%(Filename).json
+        InputType and AddSourceProperty are left empty so the task applies its own defaults (Yaml and false).
+    -->
+    <Target Name="AggregateConfigApplyDefaults">
+        <ItemGroup>
+            <AggregateConfigInput Condition="'%(AggregateConfigInput.OutputType)' == ''">
+                <OutputType>Json</OutputType>
+            </AggregateConfigInput>
+            <AggregateConfigInput Condition="'%(AggregateConfigInput.OutputFile)' == ''">
+                <OutputFile>$(AggregateConfigOutputPath)%(Filename).json</OutputFile>
+            </AggregateConfigInput>
+        </ItemGroup>
+    </Target>
+
+    <!--
+        AggregateConfigCompile Target
+
+        Processes all @(AggregateConfigInput) items during the build. Define items like this:
+
+        <ItemGroup>
+          <AggregateConfigInput Include="configs\*.yml" OutputFile="$(IntermediateOutputPath)aggregated\merged.json" OutputType="Json" />
+        </ItemGroup>
+
+        Metadata supported on AggregateConfigInput items:
+        - OutputFile: The output file path (default: $(AggregateConfigOutputPath)%(Filename).json)
+        - OutputType: The output file type: Json, Yaml, Arm or Xml (default: Json)
+        - InputType: The input file type: Json, Yaml, Arm or Xml (default: Yaml)
+        - AddSourceProperty: Whether to add the source file name to merged objects (default: false)
+
+        The target batches on OutputFile: every item that shares an OutputFile is merged in one task
+        invocation, using the directory that contains the items as InputDirectory. Items that share an
+        OutputFile should therefore live in the same directory.
+
+        The target is skipped during the outer build of multi-targeting projects (TargetFramework empty)
+        so that it runs exactly once per target framework.
+    -->
+    <Target Name="AggregateConfigCompile"
+            Condition="'@(AggregateConfigInput)' != '' AND ('$(TargetFramework)' != '' OR '$(TargetFrameworks)' == '')"
+            AfterTargets="$(AggregateConfigCompileAfterTargets)"
+            BeforeTargets="$(AggregateConfigCompileBeforeTargets)"
+            DependsOnTargets="AggregateConfigApplyDefaults;$(AggregateConfigCompileDependsOn)"
+            Inputs="@(AggregateConfigInput)"
+            Outputs="%(AggregateConfigInput.OutputFile)">
+
+        <Message Text="Aggregating configuration: %(AggregateConfigInput.Identity) -> %(AggregateConfigInput.OutputFile)" Importance="High" />
+
+        <AggregateConfig
+            InputDirectory="%(AggregateConfigInput.RootDir)%(AggregateConfigInput.Directory)"
+            InputType="%(AggregateConfigInput.InputType)"
+            OutputFile="%(AggregateConfigInput.OutputFile)"
+            OutputType="%(AggregateConfigInput.OutputType)"
+            AddSourceProperty="%(AggregateConfigInput.AddSourceProperty)" />
+
+    </Target>
 
 </Project>

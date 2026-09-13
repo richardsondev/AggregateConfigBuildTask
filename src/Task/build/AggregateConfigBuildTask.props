@@ -1,0 +1,16 @@
+<Project TreatAsLocalProperty="AggregateConfigBuildTaskAssembly">
+
+    <!-- Task assembly location -->
+    <PropertyGroup>
+        <AggregateConfigBuildTaskAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\AggregateConfigBuildTask.dll</AggregateConfigBuildTaskAssembly>
+    </PropertyGroup>
+
+    <!-- Make AggregateConfigInput available as a Build Action in Visual Studio -->
+    <ItemGroup>
+        <AvailableItemName Include="AggregateConfigInput" />
+    </ItemGroup>
+
+    <!-- Define the task -->
+    <UsingTask TaskName="AggregateConfig" AssemblyFile="$(AggregateConfigBuildTaskAssembly)" />
+
+</Project>

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 using Microsoft.Build.Framework;
 
@@ -19,7 +21,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         private readonly StringComparison comparison = StringComparison.OrdinalIgnoreCase;
 
         private Mock<ITaskLogger> mockLogger;
-        internal IFileSystem virtualFileSystem;
+        internal VirtualFileSystem virtualFileSystem;
 
         public TestContext TestContext { get; set; }
 
@@ -37,24 +39,24 @@ namespace AggregateConfigBuildTask.Tests.Unit
             foreach (var invocation in mockLogger.Invocations)
             {
                 var methodName = invocation.Method.Name;
-                var arguments = string.Join(", ", invocation.Arguments);
+                var arguments = string.Join(", ", JsonConvert.SerializeObject(invocation.Arguments));
                 TestContext.WriteLine($"Logger call: {methodName}({arguments})");
             }
         }
 
         [TestMethod]
         [Description("Test that YAML files are merged into correct JSON output.")]
-        public void ShouldGenerateJsonOutput()
+        public async Task ShouldGenerateJsonOutput()
         {
             // Arrange: Prepare sample YAML data in the mock file system.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
-            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+            description: 'First option'").ConfigureAwait(false);
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
-            description: 'Second option'");
+            description: 'Second option'").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -70,7 +72,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Check that output was generated correctly.
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.IsTrue(json.ContainsKey("options"));
             Assert.AreEqual(2, ((IEnumerable<object>)json.GetValueOrDefault("options")).Count());
@@ -78,17 +80,17 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that YAML files are merged into correct ARM parameter output.")]
-        public void ShouldGenerateArmParameterOutput()
+        public async Task ShouldGenerateArmParameterOutput()
         {
             // Arrange: Prepare sample YAML data in the mock file system.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
-            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+            description: 'First option'").ConfigureAwait(false);
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
-            description: 'Second option'");
+            description: 'Second option'").ConfigureAwait(false);
 
             // Create the task instance with the mock file system
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
@@ -105,7 +107,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Check the ARM output structure
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.parameters.json").ConfigureAwait(false);
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.IsTrue(armTemplate.ContainsKey("parameters"));
 
@@ -116,20 +118,22 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that the source property is correctly added when AddSourceProperty is true.")]
-        public void ShouldAddSourceProperty()
+        [DynamicData(nameof(GetFileTypes), DynamicDataSourceType.Method)]
+        public async Task ShouldAddSourceProperty(FileType outputType)
         {
             // Arrange: Prepare sample YAML data with source property enabled.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            Guid outputFileName = Guid.NewGuid();
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\{outputFileName}.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
+            description: 'First option'").ConfigureAwait(false);
 
             // Create the task instance with the mock file system
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
                 InputDirectory = testPath,
-                OutputFile = testPath + @"\output.json",
-                OutputType = nameof(FileType.Json),
+                OutputFile = testPath + $@"\output.{(outputType == FileType.Arm ? "json" : outputType)}",
+                OutputType = outputType.ToString().ToUpperInvariant(),
                 AddSourceProperty = true,
                 BuildEngine = Mock.Of<IBuildEngine>()
             };
@@ -139,24 +143,22 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
-            var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, string>>>>(output);
-            Assert.IsTrue(json["options"][0].ContainsKey("source"));
-            Assert.AreEqual("file1", json["options"][0]["source"]);
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.{(outputType == FileType.Arm ? "json" : outputType)}").ConfigureAwait(false);
+            StringAssert.Contains(output, outputFileName.ToString(), StringComparison.InvariantCulture);
         }
 
         [TestMethod]
         [Description("Test that the source property is correctly added for multiple files when AddSourceProperty is true.")]
-        public void ShouldAddSourcePropertyMultipleFiles()
+        public async Task ShouldAddSourcePropertyMultipleFiles()
         {
             // Arrange: Prepare sample YAML data with source property enabled.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'
             additionalOptions:
-              value: 'Good day'");
-            virtualFileSystem.WriteAllText($"{testPath}\\file2.yml", @"
+              value: 'Good day'").ConfigureAwait(false);
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file2.yml", @"
         options:
           - name: 'Option 2'
             description: 'Second option'
@@ -166,7 +168,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
               value: 'Good night'
         text:
           - name: 'Text 1'
-            description: 'Text'");
+            description: 'Text'").ConfigureAwait(false);
 
             // Create the task instance with the mock file system
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
@@ -183,7 +185,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
             Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 1", "file1"));
             Assert.IsTrue(OptionExistsWithSource(json["options"], "Option 2", "file2"));
@@ -195,13 +197,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [Description("Test that additional properties are correctly added to the top level in JSON output.")]
         [DataRow(true, DisplayName = "Legacy properties")]
         [DataRow(false, DisplayName = "Modern properties")]
-        public void ShouldIncludeAdditionalPropertiesInJson(bool useLegacyAdditionalProperties)
+        public async Task ShouldIncludeAdditionalPropertiesInJson(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample YAML data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
+            description: 'First option'").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -222,7 +224,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             Assert.AreEqual("TestRG", json["Group"]);
 
@@ -240,13 +242,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [Description("Test that additional properties are correctly added to the ARM parameters output.")]
         [DataRow(true, DisplayName = "Legacy properties")]
         [DataRow(false, DisplayName = "Modern properties")]
-        public void ShouldIncludeAdditionalPropertiesInArmParameters(bool useLegacyAdditionalProperties)
+        public async Task ShouldIncludeAdditionalPropertiesInArmParameters(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample YAML data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
-            description: 'First option'");
+            description: 'First option'").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -267,7 +269,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
@@ -299,13 +301,13 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that the task throws an error when it encounters invalid YAML format.")]
-        public void ShouldHandleInvalidYamlFormat()
+        public async Task ShouldHandleInvalidYamlFormat()
         {
             // Arrange: Add invalid YAML file to the mock file system.
-            virtualFileSystem.WriteAllText($"{testPath}\\invalid.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\invalid.yml", @"
         options:
           - name: 'Option 1'
-            description: 'Unclosed value");
+            description: 'Unclosed value").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -324,14 +326,14 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
         [TestMethod]
         [Description("Test that boolean input values are correctly treated as booleans in the output.")]
-        public void ShouldCorrectlyParseBooleanValues()
+        public async Task ShouldCorrectlyParseBooleanValues()
         {
             // Arrange: Prepare sample YAML data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.yml", @"
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.yml", @"
         options:
           - name: 'Option 1'
             description: 'First option'
-            isEnabled: true");
+            isEnabled: true").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -346,7 +348,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("array", parameters.GetValue("options", comparison)["type"].ToString());
@@ -358,10 +360,10 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [Description("Test that additional properties are correctly added to the ARM parameters output from JSON input.")]
         [DataRow(true, DisplayName = "Legacy properties")]
         [DataRow(false, DisplayName = "Modern properties")]
-        public void ShouldIncludeAdditionalPropertiesInJsonInput(bool useLegacyAdditionalProperties)
+        public async Task ShouldIncludeAdditionalPropertiesInJsonInput(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare sample JSON data.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.json", """
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.json", """
     {
         "options": [
             {
@@ -371,7 +373,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             }
         ]
     }
-""");
+""").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -393,7 +395,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
@@ -405,13 +407,64 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         [TestMethod]
+        [Description("Test that additional properties are correctly added to the JSON output from XML input.")]
+        [DataRow(true, DisplayName = "Legacy properties")]
+        [DataRow(false, DisplayName = "Modern properties")]
+        public async Task ShouldIncludeAdditionalPropertiesInXmlInput(bool useLegacyAdditionalProperties)
+        {
+            // Arrange: Prepare sample XML data.
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.xml", """
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <options>
+    <name>Option 1</name>
+    <description>First option</description>
+  </options>
+</root>
+""").ConfigureAwait(false);
+
+            var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
+            {
+                InputDirectory = testPath,
+                InputType = nameof(FileType.Xml),
+                OutputFile = testPath + @"\output.json",
+                OutputType = nameof(FileType.Json),
+                AddSourceProperty = true,
+                AdditionalProperties = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "Group", "TestRG" },
+            { "Environment\\=Key", "Prod\\=West" }
+        }.CreateTaskItems(useLegacyAdditionalProperties),
+                BuildEngine = Mock.Of<IBuildEngine>()
+            };
+
+            // Act: Execute the task
+            bool result = task.Execute();
+
+            // Assert: Verify additional properties are included
+            Assert.IsTrue(result);
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
+            Assert.AreEqual("TestRG", json["Group"]);
+
+            if (useLegacyAdditionalProperties)
+            {
+                Assert.AreEqual("Prod=West", json["Environment=Key"]);
+            }
+            else
+            {
+                Assert.AreEqual("Prod\\=West", json["Environment\\=Key"]);
+            }
+        }
+
+        [TestMethod]
         [Description("Test that ARM parameters are correctly processed and additional properties are included in the output.")]
         [DataRow(true, DisplayName = "Legacy properties")]
         [DataRow(false, DisplayName = "Modern properties")]
-        public void ShouldIncludeAdditionalPropertiesInArmParameterFile(bool useLegacyAdditionalProperties)
+        public async Task ShouldIncludeAdditionalPropertiesInArmParameterFile(bool useLegacyAdditionalProperties)
         {
             // Arrange: Prepare ARM template parameter file data in 'file1.parameters.json'.
-            virtualFileSystem.WriteAllText($"{testPath}\\file1.parameters.json", """
+            await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file1.parameters.json", """
     {
         "parameters": {
             "options": {
@@ -426,7 +479,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             }
         }
     }
-""");
+""").ConfigureAwait(false);
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
             {
@@ -448,7 +501,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify additional properties are included in ARM output
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.parameters.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.parameters.json").ConfigureAwait(false);
             var armTemplate = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);
             JObject parameters = (JObject)armTemplate["parameters"];
             Assert.AreEqual("TestRG", parameters.GetValue("Group", comparison)["value"].Value<string>());
@@ -462,7 +515,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
         [TestMethod]
         [Description("Stress test to verify the source property is correctly added for 1,000 files with 10 options each.")]
         [Timeout(60000)]
-        public void StressTest_ShouldAddSourcePropertyManyFiles()
+        public async Task StressTest_ShouldAddSourcePropertyManyFiles()
         {
             // Arrange: Prepare sample YAML data.
             const int totalFiles = 1_000;
@@ -480,7 +533,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
                 }
 
                 // Write each YAML file to the mock file system
-                virtualFileSystem.WriteAllText($"{testPath}\\file{fileIndex}.yml", sb.ToString());
+                await virtualFileSystem.WriteAllTextAsync($"{testPath}\\file{fileIndex}.yml", sb.ToString()).ConfigureAwait(false);
             }
 
             var task = new AggregateConfig(virtualFileSystem, mockLogger.Object)
@@ -497,7 +550,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
 
             // Assert: Verify that the source property was added correctly for all files and options
             Assert.IsTrue(result);
-            string output = virtualFileSystem.ReadAllText($"{testPath}\\output.json");
+            string output = await virtualFileSystem.ReadAllTextAsync($"{testPath}\\output.json").ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(output);
 
             int optionIndexInTotal = 0;
@@ -512,37 +565,31 @@ namespace AggregateConfigBuildTask.Tests.Unit
         }
 
         [TestMethod]
-        [DataRow("arm", new[] { "json", "yml", "arm" }, DisplayName = "ARM -> JSON -> YAML -> ARM")]
-        [DataRow("arm", new[] { "yml", "json", "arm" }, DisplayName = "ARM -> YAML -> JSON -> ARM")]
-        [DataRow("json", new[] { "arm", "yml", "json" }, DisplayName = "JSON -> ARM -> YAML -> JSON")]
-        [DataRow("json", new[] { "yml", "arm", "json" }, DisplayName = "JSON -> YAML -> ARM -> JSON")]
-        [DataRow("yml", new[] { "arm", "json", "yml" }, DisplayName = "YAML -> ARM -> JSON -> YAML")]
-        [DataRow("yml", new[] { "json", "arm", "yml" }, DisplayName = "YAML -> JSON -> ARM -> YAML")]
-        [Description("Test that files are correctly translated between ARM, JSON, and YAML.")]
-        public void ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps)
+        [Description("Test that files are correctly translated between all supported FileTypes.")]
+        [DynamicData(nameof(GetFileTypeConversions), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(GetTestDisplayName))]
+        public async Task ShouldTranslateBetweenFormatsAndValidateNoDataLoss(string inputType, string[] steps, string _)
         {
+            ArgumentNullException.ThrowIfNull(inputType);
             Assert.IsTrue(steps?.Length > 0);
 
             // Setup input file
-            string inputFilePath = SetupInputFile(inputType);
+            string inputFilePath = await SetupInputFile(inputType).ConfigureAwait(false);
 
             // Execute translation chain
             var (finalInputPath, finalOutputType) = ExecuteTranslationChain(inputType, steps, inputFilePath);
 
-            // Execute final conversion back to original format
-            string finalOutputPath = ExecuteFinalConversion(inputType, finalInputPath, finalOutputType);
-
-            // Validate no data loss
-            AssertNoDataLoss(inputFilePath, finalOutputPath, inputType);
+            // Execute final conversion back to original format (includes data loss validation)
+            await ExecuteFinalConversion(inputType, finalInputPath, finalOutputType, inputFilePath).ConfigureAwait(false);
         }
 
-        private string SetupInputFile(string inputType)
+        private async Task<string> SetupInputFile(string inputType)
         {
             var inputDir = $"{testPath}\\input";
             virtualFileSystem.CreateDirectory(inputDir);
 
-            var inputFilePath = $"{inputDir}\\input.{(string.Equals(inputType, "arm", StringComparison.Ordinal) ? "json" : inputType)}";
-            virtualFileSystem.WriteAllText(inputFilePath, GetSampleDataForType(inputType));
+            // Write the initial input file
+            var inputFilePath = $"{inputDir}\\input.{(inputType.Equals(nameof(FileType.Arm), StringComparison.OrdinalIgnoreCase) ? "json" : inputType)}";
+            await virtualFileSystem.WriteAllTextAsync(inputFilePath, DemoData.GetSampleDataForType(inputType)).ConfigureAwait(false);
 
             return inputFilePath;
         }
@@ -557,7 +604,7 @@ namespace AggregateConfigBuildTask.Tests.Unit
             {
                 var outputType = steps[i];
                 var stepDir = $"{testPath}\\step{i + 1}";
-                var stepOutputPath = $"{stepDir}\\output.{(string.Equals(outputType, "arm", StringComparison.Ordinal) ? "json" : outputType)}";
+                var stepOutputPath = $"{stepDir}\\output.{(outputType.Equals(nameof(FileType.Arm), StringComparison.OrdinalIgnoreCase) ? "json" : outputType)}";
 
                 virtualFileSystem.CreateDirectory(stepDir);
 
@@ -572,16 +619,78 @@ namespace AggregateConfigBuildTask.Tests.Unit
             return (previousInputPath, previousOutputType);
         }
 
-        private string ExecuteFinalConversion(string inputType, string previousInputPath, string previousOutputType)
+        private async Task<string> ExecuteFinalConversion(string inputType, string previousInputPath, string previousOutputType, string originalInputPath)
         {
             // Final step: Convert the final output back to the original input type
             var finalDir = $"{testPath}\\final";
-            var finalOutputPath = $"{finalDir}\\final_output.{(string.Equals(inputType, "arm", StringComparison.Ordinal) ? "json" : inputType)}";
+            var finalOutputPath = $"{finalDir}\\final_output.{(inputType.Equals(nameof(FileType.Arm), StringComparison.OrdinalIgnoreCase) ? "json" : inputType)}";
             virtualFileSystem.CreateDirectory(finalDir);
 
             ExecuteTranslationTask(previousOutputType, inputType, previousInputPath, finalOutputPath);
 
+            // Assert: Compare final output with original input to check no data loss
+            string originalInput = await virtualFileSystem.ReadAllTextAsync(originalInputPath).ConfigureAwait(false);
+            string finalOutput = await virtualFileSystem.ReadAllTextAsync(finalOutputPath).ConfigureAwait(false);
+            // Compare content only: the sample data carries the source file's line endings while writers use Environment.NewLine.
+            originalInput = originalInput.Replace("\r\n", "\n", StringComparison.Ordinal);
+            finalOutput = finalOutput.Replace("\r\n", "\n", StringComparison.Ordinal);
+            Assert.IsTrue(string.Equals(originalInput, finalOutput, StringComparison.Ordinal), $"Data mismatch after full conversion cycle for {inputType}.\nExpected:\n{originalInput}\nActual:\n{finalOutput}");
+
             return finalOutputPath;
+        }
+
+        public static IEnumerable<object[]> GetFileTypes()
+        {
+            foreach (var type in Enum.GetValues<FileType>())
+            {
+                yield return new object[] { type };
+            }
+        }
+
+        public static IEnumerable<object[]> GetFileTypeConversions()
+        {
+            // Enum aliases (Yaml/Yml, Arm/ArmParameter) share a value, so deduplicate by name.
+            var fileTypes = Enum.GetValues<FileType>()
+                .Select(ft => ft.ToString().ToUpperInvariant())
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            // XML carries no type information, so it can only start a chain: typed JSON, YAML and ARM
+            // values that pass through XML would come back as strings.
+            var intermediateTypes = fileTypes
+                .Where(ft => !string.Equals(ft, "XML", StringComparison.Ordinal))
+                .ToArray();
+
+            foreach (var initialFormat in fileTypes)
+            {
+                var steps = intermediateTypes.Where(ft => !string.Equals(ft, initialFormat, StringComparison.Ordinal)).ToArray();
+                foreach (var permutation in GetPermutations(steps, steps.Length))
+                {
+                    var displayName = $"{initialFormat.ToUpperInvariant()} -> {string.Join(" -> ", permutation.Select(p => p.ToUpperInvariant()))} -> {initialFormat.ToUpperInvariant()}";
+                    yield return new object[] { initialFormat, permutation.ToArray(), displayName };
+                }
+            }
+        }
+
+        public static string GetTestDisplayName(MethodInfo methodInfo, object[] data)
+        {
+            ArgumentNullException.ThrowIfNull(methodInfo);
+            ArgumentNullException.ThrowIfNull(data);
+
+            // Get the custom display name from the third parameter.
+            return (string)data[2];
+        }
+
+        private static IEnumerable<IEnumerable<string>> GetPermutations(IEnumerable<string> list, int length)
+        {
+            if (length == 1)
+            {
+                return list.Select(t => new[] { t });
+            }
+
+            return GetPermutations(list, length - 1)
+                .SelectMany(t => list.Where(e => !t.Contains(e, StringComparer.Ordinal)),
+                            (t1, t2) => t1.Concat([t2]));
         }
 
         private void ExecuteTranslationTask(string inputType, string outputType, string inputFilePath, string outputFilePath)
@@ -596,111 +705,6 @@ namespace AggregateConfigBuildTask.Tests.Unit
             };
             bool result = task.Execute();
             Assert.IsTrue(result, $"Failed translation: {inputType} -> {outputType}");
-        }
-
-        private void AssertNoDataLoss(string originalFilePath, string finalFilePath, string inputType)
-        {
-            string originalInput = virtualFileSystem.ReadAllText(originalFilePath);
-            string finalOutput = virtualFileSystem.ReadAllText(finalFilePath);
-            Assert.IsTrue(string.Equals(originalInput, finalOutput, StringComparison.Ordinal), $"Data mismatch after full conversion cycle for {inputType}");
-        }
-
-        private static string GetSampleDataForType(string type)
-        {
-            if (string.Equals(type, "json", StringComparison.Ordinal))
-            {
-                return GetJsonSampleData();
-            }
-            else if (string.Equals(type, "arm", StringComparison.Ordinal))
-            {
-                return GetArmSampleData();
-            }
-            else if (string.Equals(type, "yml", StringComparison.Ordinal))
-            {
-                return GetYmlSampleData();
-            }
-            else
-            {
-                throw new InvalidOperationException("Unknown type");
-            }
-        }
-
-        private static string GetJsonSampleData()
-        {
-            return """
-{
-  "options": [
-    {
-      "name": "Option 1",
-      "description": "First option",
-      "isTrue": true,
-      "number": 100,
-      "nested": [
-        {
-          "name": "Nested option 1",
-          "description": "Nested first option",
-          "isTrue": true,
-          "number": 1001
-        },
-        {
-          "name": "Nested option 2",
-          "description": "Nested second option"
-        }
-      ]
-    }
-  ]
-}
-""";
-        }
-
-        private static string GetArmSampleData()
-        {
-            return """
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "options": {
-      "type": "object",
-      "value": {
-        "name": "Option 1",
-        "description": "First option",
-        "isTrue": true,
-        "number": 100,
-        "nested": [
-          {
-            "name": "Nested option 1",
-            "description": "Nested first option",
-            "isTrue": true,
-            "number": 1002
-          },
-          {
-            "name": "Nested option 2",
-            "description": "Nested second option"
-          }
-        ]
-      }
-    }
-  }
-}
-""";
-        }
-
-        private static string GetYmlSampleData()
-        {
-            return @"options:
-- name: Option 1
-  description: First option
-  isTrue: true
-  number: 100
-  nested:
-  - name: Nested option 1
-    description: Nested first option
-    isTrue: true
-    number: 1003
-  - name: Nested option 2
-    description: Nested second option
-";
         }
 
         /// <summary>

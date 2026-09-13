@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace AggregateConfigBuildTask
 {
@@ -11,27 +12,12 @@ namespace AggregateConfigBuildTask
         }
 
         /// <inheritdoc/>
-        public string[] ReadAllLines(string path)
+        public async Task WriteAllTextAsync(string path, string text)
         {
-            return File.ReadAllLines(path);
-        }
-
-        /// <inheritdoc/>
-        public string ReadAllText(string path)
-        {
-            return File.ReadAllText(path);
-        }
-
-        /// <inheritdoc/>
-        public void WriteAllText(string path, string text)
-        {
-            File.WriteAllText(path, text);
-        }
-
-        /// <inheritdoc/>
-        public bool FileExists(string path)
-        {
-            return File.Exists(path);
+            using (var writer = new StreamWriter(path))
+            {
+                await writer.WriteAsync(text).ConfigureAwait(false);
+            }
         }
 
         /// <inheritdoc/>

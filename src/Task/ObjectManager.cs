@@ -68,7 +68,7 @@ namespace AggregateConfigBuildTask
                         catch (Exception ex)
                         {
                             hasError = true;
-                            log.LogError(message: "Could not parse {0}: {1}", file, ex.Message);
+                            log.LogError(message: "Could not parse {0}: {1}", messageArgs: new object[] { file, ex.Message });
                             log.LogErrorFromException(ex, true, true, file);
                             continue;
                         }

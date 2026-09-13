@@ -25,6 +25,8 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return new YamlFileHandler(fileSystem);
                 case FileType.Arm:
                     return new ArmParametersFileHandler(fileSystem);
+                case FileType.Xml:
+                    return new XmlFileHandler(fileSystem);
                 default:
                     throw new ArgumentException("Unsupported format", nameof(format));
             }
@@ -46,6 +48,8 @@ namespace AggregateConfigBuildTask.FileHandlers
                     return new List<string> { ".yml", ".yaml" };
                 case FileType.Arm:
                     return new List<string> { ".json" };
+                case FileType.Xml:
+                    return new List<string> { ".xml" };
                 default:
                     throw new ArgumentException("Unsupported input type", nameof(inputType));
             }

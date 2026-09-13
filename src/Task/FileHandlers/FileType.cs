@@ -29,5 +29,10 @@ namespace AggregateConfigBuildTask
         /// Alias for the <see cref="Yml"/> file type, for files with the .yaml extension.
         /// </summary>
         Yaml = Yml,
+
+        /// <summary>
+        /// Represents an eXtensible Markup Language (XML) file type.
+        /// </summary>
+        Xml = 3,
     }
 }

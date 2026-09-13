@@ -132,7 +132,7 @@ namespace AggregateConfigBuildTask
                 finalResult = ObjectManager.InjectAdditionalProperties(finalResult, additionalPropertiesDictionary, logger).GetAwaiter().GetResult();
 
                 var writer = FileHandlerFactory.GetFileHandlerForType(fileSystem, outputType);
-                writer.WriteOutput(finalResult, OutputFile);
+                writer.WriteOutput(finalResult, OutputFile).GetAwaiter().GetResult();
                 logger.LogMessage(MessageImportance.High, "Wrote aggregated configuration file to {0}", OutputFile);
 
                 return true;

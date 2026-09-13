@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <OutputType>Library</OutputType>
+        <!-- Standalone example: opt out of the repository's Central Package Management -->
+        <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     </PropertyGroup>
 
     <!-- Include the AggregateConfigBuildTask package -->
